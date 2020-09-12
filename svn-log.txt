@@ -1,0 +1,318 @@
+------------------------------------------------------------------------
+r75 | laplima | 2020-07-24 19:31:58 -0300 (Fri, 24 Jul 2020) | 3 lines
+
+CSemaphore class included (for C++11).
+CSemaphore implements regular "counting" semaphores using a mutex and a condition variable. The class had to be named "CSemaphore" to avoid conflit with ACETAO's semaphore.h files (I couldn't solve this conflict using the colibry namespace).
+All header files that include other colibry header files, must reference them using double quotes, so that to avoid dependence on the installation of header files in the colibry/include directory.
+------------------------------------------------------------------------
+r74 | laplima | 2020-06-18 22:13:55 -0300 (Thu, 18 Jun 2020) | 1 line
+
+Include updates: colibry/...
+------------------------------------------------------------------------
+r73 | laplima | 2020-06-02 17:38:41 -0300 (Tue, 02 Jun 2020) | 1 line
+
+Uninitialized ORBManager is now possible to construct.
+------------------------------------------------------------------------
+r72 | laplima | 2020-04-25 09:27:41 -0300 (Sat, 25 Apr 2020) | 2 lines
+
+Bag improved.
+Bugs fized in the Dictionary class (though the improbable sequence of removing entries and then searching by index can lead to unexpected results).
+------------------------------------------------------------------------
+r71 | laplima | 2020-04-24 21:38:19 -0300 (Fri, 24 Apr 2020) | 1 line
+
+Dictionary is being improved.
+------------------------------------------------------------------------
+r70 | laplima | 2020-04-23 20:46:52 -0300 (Thu, 23 Apr 2020) | 1 line
+
+Updates.
+------------------------------------------------------------------------
+r69 | laplima | 2020-02-24 11:02:30 -0300 (Mon, 24 Feb 2020) | 1 line
+
+Bag class reviewed. Bugs fixed. Lower-case method names. Extract/put back elements with << and >> operators.
+------------------------------------------------------------------------
+r68 | laplima | 2020-02-15 17:29:16 -0300 (Sat, 15 Feb 2020) | 1 line
+
+Sockets updated to use getaddrinfo().
+------------------------------------------------------------------------
+r67 | laplima | 2019-12-21 08:52:06 -0300 (Sat, 21 Dec 2019) | 1 line
+
+Docs for ORBManager updated.
+------------------------------------------------------------------------
+r66 | laplima | 2019-10-10 20:42:47 -0300 (Thu, 10 Oct 2019) | 1 line
+
+Color added to text utils.
+------------------------------------------------------------------------
+r65 | laplima | 2019-09-28 22:49:54 -0300 (Sat, 28 Sep 2019) | 1 line
+
+split() added to the TextTools.
+------------------------------------------------------------------------
+r64 | laplima | 2019-03-31 20:54:01 -0300 (Sun, 31 Mar 2019) | 1 line
+
+string_to_object with added template.
+------------------------------------------------------------------------
+r63 | laplima | 2019-03-10 18:06:28 -0300 (Sun, 10 Mar 2019) | 1 line
+
+Compile options for both Linux and macOS.
+------------------------------------------------------------------------
+r62 | laplima | 2019-03-09 11:07:35 -0300 (Sat, 09 Mar 2019) | 1 line
+
+NO_DEFAULT_PATH seems to do the trick (solving readline problem).
+------------------------------------------------------------------------
+r61 | laplima | 2019-03-09 10:47:18 -0300 (Sat, 09 Mar 2019) | 3 lines
+
+ThreadPool (orbutils) moved to deprecated (it uses pthread library - better if using STL thread insted - TO DO).
+macOS gets readline library from /usr/lib instead of /opt/local/lib (MacPorts). So I had to "manually" fix this.
+InteractiveShell has gone through several changes: (a) Help() for individual commands has become Doc(); (b) file completion is now deactivated by default (use enable_file_completion() to enable it); (c) now it is possible to use completion for the command parameter by providing a list (vector) of strings (SetArg0Options()).
+------------------------------------------------------------------------
+r60 | laplima | 2019-03-05 18:44:53 -0300 (Tue, 05 Mar 2019) | 1 line
+
+Fixed a typo in DateTime.h. Logger now has the ability of disabling timestamp on the output.
+------------------------------------------------------------------------
+r59 | laplima | 2019-03-05 18:16:19 -0300 (Tue, 05 Mar 2019) | 1 line
+
+Logger updated so that to simplify specifying log level.
+------------------------------------------------------------------------
+r58 | laplima | 2019-01-31 20:37:01 -0200 (Thu, 31 Jan 2019) | 1 line
+
+Old throw specifiers on class methods removed.
+------------------------------------------------------------------------
+r57 | laplima | 2018-12-12 14:58:19 -0200 (Wed, 12 Dec 2018) | 2 lines
+
+NameServer: Fixed a bug when orb is provided.
+ORBManager: some improvements, noticeably, create_child_poa() method added.
+------------------------------------------------------------------------
+r56 | laplima | 2018-10-03 15:34:48 -0300 (Wed, 03 Oct 2018) | 1 line
+
+Mojave problem: include path added to fix.
+------------------------------------------------------------------------
+r55 | laplima | 2018-06-14 18:29:38 -0300 (Thu, 14 Jun 2018) | 1 line
+
+Improvements on TextTools: cursor_back, up, erase_end_of_line, cls, etc.
+------------------------------------------------------------------------
+r54 | laplima | 2018-05-31 19:55:44 -0300 (Thu, 31 May 2018) | 4 lines
+
+Moved to CMake project (see README for details).
+Makefile + Makefile-template removed.
+Library adjustments to compile.
+CmdLineParser moved to deprecated.
+------------------------------------------------------------------------
+r53 | laplima | 2018-05-31 18:47:28 -0300 (Thu, 31 May 2018) | 1 line
+
+include and lib removed from version control.
+------------------------------------------------------------------------
+r52 | laplima | 2018-05-31 18:44:46 -0300 (Thu, 31 May 2018) | 1 line
+
+First step in moving to CMake. Not yet there!
+------------------------------------------------------------------------
+r51 | laplima | 2018-05-30 16:22:29 -0300 (Wed, 30 May 2018) | 1 line
+
+Removed specialized pkg-config files.
+------------------------------------------------------------------------
+r50 | laplima | 2018-04-20 11:40:23 -0300 (Fri, 20 Apr 2018) | 1 line
+
+UDP "simple" client added. Multicast still not working.
+------------------------------------------------------------------------
+r49 | laplima | 2018-04-18 18:41:45 -0300 (Wed, 18 Apr 2018) | 1 line
+
+UDP sockets implemented, compiling, but when assigning a multicast address, it's not working.
+------------------------------------------------------------------------
+r48 | laplima | 2018-04-17 18:03:36 -0300 (Tue, 17 Apr 2018) | 1 line
+
+Not compiling yet. Just for sync.
+------------------------------------------------------------------------
+r47 | laplima | 2018-03-23 18:08:26 -0300 (Fri, 23 Mar 2018) | 1 line
+
+Fix library order on clang++ command line on Linux (Makefiles have been modified).
+------------------------------------------------------------------------
+r46 | laplima | 2018-03-23 16:57:41 -0300 (Fri, 23 Mar 2018) | 1 line
+
+New Makefiles on the Sockets/test library are now ok (base for other multiple targets).
+------------------------------------------------------------------------
+r45 | laplima | 2018-03-23 11:59:49 -0300 (Fri, 23 Mar 2018) | 2 lines
+
+Template Makefiles created for the Sockets library.
+Makefile, to make Makefile.echo_server + Makefile.echo_client still not working.
+------------------------------------------------------------------------
+r44 | laplima | 2018-03-22 23:29:08 -0300 (Thu, 22 Mar 2018) | 1 line
+
+pkg-config .pc file added.
+------------------------------------------------------------------------
+r43 | laplima | 2018-03-19 10:52:15 -0300 (Mon, 19 Mar 2018) | 1 line
+
+Further tests performed on the Socket class (though nothing has really changed).
+------------------------------------------------------------------------
+r42 | laplima | 2018-03-17 20:02:38 -0300 (Sat, 17 Mar 2018) | 1 line
+
+Bug of last commit fixed.
+------------------------------------------------------------------------
+r41 | laplima | 2018-03-17 20:00:58 -0300 (Sat, 17 Mar 2018) | 1 line
+
+String operator>> and << will not send size anymore (this isn't needed since the number of bytes transmitted is already the size). Not yet tested...
+------------------------------------------------------------------------
+r40 | laplima | 2018-03-06 11:10:34 -0300 (Tue, 06 Mar 2018) | 1 line
+
+Socket-related classes updated.
+------------------------------------------------------------------------
+r39 | laplima | 2018-03-04 22:07:54 -0300 (Sun, 04 Mar 2018) | 3 lines
+
+TCPSocket marked deprecated.
+Socket class under updating (not finished).
+throw_if included.
+------------------------------------------------------------------------
+r38 | laplima | 2017-12-09 23:26:55 -0200 (Sat, 09 Dec 2017) | 1 line
+
+Red-Black Binary Search trees included. Remove() method stil not implemented, though.
+------------------------------------------------------------------------
+r37 | laplima | 2017-06-19 14:03:41 -0300 (Mon, 19 Jun 2017) | 1 line
+
+stdexception needs to be defined for Dictionary class in Linux systems.
+------------------------------------------------------------------------
+r36 | laplima | 2017-06-16 19:53:48 -0300 (Fri, 16 Jun 2017) | 1 line
+
+DateTime: NULL => nullptr
+------------------------------------------------------------------------
+r35 | laplima | 2017-06-15 20:26:05 -0300 (Thu, 15 Jun 2017) | 1 line
+
+Dictionary changes. Not tested.
+------------------------------------------------------------------------
+r34 | laplima | 2017-06-13 15:33:21 -0300 (Tue, 13 Jun 2017) | 3 lines
+
+Bag.h fixed.
+TAO libraries improved.
+a.out ignore everywhere.
+------------------------------------------------------------------------
+r33 | laplima | 2017-06-13 10:40:52 -0300 (Tue, 13 Jun 2017) | 2 lines
+
+CORBA (ACETAO)-related libraries added (ORBManager, NameServer, ThreadPool).
+Thread library is now marked deprecated (since C++11 additions).
+------------------------------------------------------------------------
+r32 | laplima | 2017-05-02 08:16:49 -0300 (Tue, 02 May 2017) | 1 line
+
+New Bag class with plenty of improvements. Interface has changed, so some old programs may not compile. OldBag.h kept for reference.
+------------------------------------------------------------------------
+r31 | laplima | 2017-04-28 08:22:27 -0300 (Fri, 28 Apr 2017) | 1 line
+
+Makefile => C++14
+------------------------------------------------------------------------
+r30 | laplima | 2017-04-27 22:07:56 -0300 (Thu, 27 Apr 2017) | 1 line
+
+Dictionary is a new version of SymTable.
+------------------------------------------------------------------------
+r29 | laplima | 2017-04-27 10:13:41 -0300 (Thu, 27 Apr 2017) | 1 line
+
+Singleton?
+------------------------------------------------------------------------
+r28 | laplima | 2017-04-27 09:43:23 -0300 (Thu, 27 Apr 2017) | 1 line
+
+ThrowIf added to Exception class.
+------------------------------------------------------------------------
+r27 | laplima | 2016-07-11 13:16:37 -0300 (Mon, 11 Jul 2016) | 1 line
+
+Small adjustment in help.
+------------------------------------------------------------------------
+r26 | laplima | 2016-07-10 23:58:06 -0300 (Sun, 10 Jul 2016) | 1 line
+
+Fixed a bug on InteractiveShell Help method.
+------------------------------------------------------------------------
+r25 | laplima | 2016-07-09 10:20:12 -0300 (Sat, 09 Jul 2016) | 1 line
+
+Macros for InteractiveShell updated.
+------------------------------------------------------------------------
+r24 | laplima | 2016-07-09 09:12:36 -0300 (Sat, 09 Jul 2016) | 1 line
+
+Added include file to InteractiveShell.
+------------------------------------------------------------------------
+r23 | laplima | 2016-07-08 23:58:05 -0300 (Fri, 08 Jul 2016) | 1 line
+
+InteractiveShell fully implemented, replacing CmdLineParser (considered deprecated from now on)...
+------------------------------------------------------------------------
+r22 | laplima | 2016-07-08 17:24:52 -0300 (Fri, 08 Jul 2016) | 1 line
+
+Starting to implement InteractiveShell.
+------------------------------------------------------------------------
+r21 | laplima | 2016-07-07 23:25:29 -0300 (Thu, 07 Jul 2016) | 1 line
+
+Added InteractiveShell as a new version of CmdLineParser (using C++11 resources). For the time being, nothing has changed.
+------------------------------------------------------------------------
+r20 | laplima | 2016-07-06 16:57:04 -0300 (Wed, 06 Jul 2016) | 1 line
+
+Makefile fixed.
+------------------------------------------------------------------------
+r19 | laplima | 2016-07-06 16:54:25 -0300 (Wed, 06 Jul 2016) | 1 line
+
+Makefile updated.
+------------------------------------------------------------------------
+r18 | laplima | 2016-07-05 22:36:53 -0300 (Tue, 05 Jul 2016) | 1 line
+
+Makefile: using clang++ insteado of g++ even for Linux.
+------------------------------------------------------------------------
+r17 | laplima | 2015-10-09 16:10:43 -0300 (Fri, 09 Oct 2015) | 1 line
+
+Bag.h => include <colibry/Nullable.h> (included "colibry").
+------------------------------------------------------------------------
+r16 | laplima | 2015-09-02 17:23:49 -0300 (Wed, 02 Sep 2015) | 1 line
+
+ConsoleApp.cpp: auto_ptr => unique_ptr.
+------------------------------------------------------------------------
+r15 | laplima | 2015-04-20 10:01:16 -0300 (Mon, 20 Apr 2015) | 1 line
+
+Removed tests for unsigned ints are less than zero in AutTable.
+------------------------------------------------------------------------
+r14 | laplima | 2013-09-11 13:55:43 -0300 (Wed, 11 Sep 2013) | 1 line
+
+Logger => SET_DEFAULT_STREAM
+------------------------------------------------------------------------
+r13 | laplima | 2013-08-16 16:11:56 -0300 (Fri, 16 Aug 2013) | 1 line
+
+DHFUNC is an option to DECLARE_HOOK_FUNCTION.
+------------------------------------------------------------------------
+r12 | laplima | 2013-07-15 22:33:14 -0300 (Mon, 15 Jul 2013) | 1 line
+
+Compile (Makefile) adaptations to C++11.
+------------------------------------------------------------------------
+r11 | laplima | 2013-06-08 22:12:39 -0300 (Sat, 08 Jun 2013) | 1 line
+
+Resolved a few compilation warnings.
+------------------------------------------------------------------------
+r10 | laplima | 2013-06-08 22:05:57 -0300 (Sat, 08 Jun 2013) | 1 line
+
+Small changes in CmdLineParser.
+------------------------------------------------------------------------
+r9 | laplima | 2013-04-07 17:57:54 -0300 (Sun, 07 Apr 2013) | 1 line
+
+Extra comments added to CmdLineParser.h and Logger.h.
+------------------------------------------------------------------------
+r8 | laplima | 2013-03-19 16:44:45 -0300 (Tue, 19 Mar 2013) | 1 line
+
+Small bug fixes + include files are now symbolic links.
+------------------------------------------------------------------------
+r7 | laplima | 2013-03-19 16:43:46 -0300 (Tue, 19 Mar 2013) | 1 line
+
+Small bug fixes + includes files are now symbolic links.
+------------------------------------------------------------------------
+r6 | laplima | 2013-03-19 16:33:48 -0300 (Tue, 19 Mar 2013) | 2 lines
+
+All real files (not symbolci links) in the include/colibry dir were removed.
+
+------------------------------------------------------------------------
+r5 | laplima | 2013-02-24 21:10:31 -0300 (Sun, 24 Feb 2013) | 1 line
+
+Support for clang++ include for Darwin.
+------------------------------------------------------------------------
+r4 | laplima | 2013-01-10 07:55:57 -0200 (Thu, 10 Jan 2013) | 1 line
+
+CmdLineParser.h: included new macro DHFUNC (==DECLARE_HOOK_FUNCTION).
+------------------------------------------------------------------------
+r3 | laplima | 2012-10-16 15:45:28 -0300 (Tue, 16 Oct 2012) | 2 lines
+
+The right place to throw an exception in the CmdLineParser class is not the readline method, but the Execute method.
+
+------------------------------------------------------------------------
+r2 | laplima | 2012-10-06 17:37:38 -0300 (Sat, 06 Oct 2012) | 1 line
+
+Removed exception limitation on the Execute method of CmdLineParser.
+------------------------------------------------------------------------
+r1 | laplima | 2012-10-05 15:01:06 -0300 (Fri, 05 Oct 2012) | 1 line
+
+Initial import (after hidra' crash).
+------------------------------------------------------------------------

@@ -1,0 +1,25 @@
+#
+# This is pkg-config file for colibry library
+# by laplima
+# Set PKG_CONFIG_PATH or create symbolic link at /opt/local/share/pkgconfig
+#
+# Overwrite prefix:
+#
+#    pkg-config --cflags --libs --define-variable=prefix=$COLIBRY colibry
+#
+
+prefix=/Users/laplima/svn-work/colibry
+exec_prefix=${prefix}
+
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: COLibry
+Description: Common Object Library
+Version: 1.43
+URL:
+Requires:
+Conflicts:
+Libs: -L${libdir} -lcolibry
+Libs.private:
+Cflags: -I${includedir}
