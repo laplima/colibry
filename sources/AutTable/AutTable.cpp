@@ -31,7 +31,7 @@ SymTable AutTable::sIOT;
 			    filename, nline); }
 
 inline void ThrowIfNotFound(string::size_type p, const string& filename,
-			    UInt32 nline)
+			    std::uint32_t nline)
 {
     if (p == string::npos)
 	throw FileException(FileException::WRONG_FORMAT,
@@ -45,7 +45,7 @@ inline unsigned long int StrToULong(const string& s)
 
 // Constructors
 
-AutTable::AutTable(const UInt32 inMaxStates)
+AutTable::AutTable(const std::uint32_t inMaxStates)
 {
     fMaxStates = inMaxStates;
 
@@ -89,7 +89,7 @@ AutTable::LoadFile(const string &filename)
     list<SigType> lout;
     string::size_type p1;
 
-    UInt32 nline = 1;
+    std::uint32_t nline = 1;
 
     // AUTOMATON DESCRIPTOR (first line)
     // Get initial state
@@ -498,7 +498,12 @@ AutTable::GetSignalIndex(const string &inSigName)
 bool
 AutTable::IsValidSignal(const string &inSigName)
 {
-    return (bool)(sIOT.Find(inSigName) != SymTable::NULLINDEX);
+    try {
+        sIOT.Find(inSigName);
+        return true;
+    } catch(const SymTable::not_found&) {
+        return false;
+    }
 }
 
 bool

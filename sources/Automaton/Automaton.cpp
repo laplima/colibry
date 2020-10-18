@@ -18,7 +18,7 @@ using namespace colibry;
 // Type defintions
 typedef char Line[MAXLINELEN];
 
-const colibry::UInt32 AUTRESERVED_SIZE = 128;			// Reserved size for state vector
+const uint32_t AUTRESERVED_SIZE = 128;			// Reserved size for state vector
 
 // Macros
 #define ThrowWFIfNULL(ptr)	\
@@ -29,7 +29,7 @@ const colibry::UInt32 AUTRESERVED_SIZE = 128;			// Reserved size for state vecto
 
 
 // Helpful functions prototypes
-bool CompareLines(BoolMatrix *bm, colibry::UInt32 i, colibry::UInt32 j);
+bool CompareLines(BoolMatrix *bm, uint32_t i, uint32_t j);
 
 
 //
@@ -150,7 +150,7 @@ ostream &colibry::operator<<(ostream &os, const Node &nd)
 //
 
 BMatException::BMatException(int type, const string& where,
-			       UInt32 row, UInt32 col)
+			       uint32_t row, uint32_t col)
     : Exception((int)type,where), m_row(row), m_column(col)
 {
     ostringstream ss;
@@ -174,7 +174,7 @@ BMatException::BMatException(int type, const string& where,
 // BoolMatrix
 //
 
-BoolMatrix::BoolMatrix(const UInt32 ln, const UInt32 rw)
+BoolMatrix::BoolMatrix(const uint32_t ln, const uint32_t rw)
 {
     try {
 	mNRows = ln;
@@ -205,12 +205,12 @@ BoolMatrix &BoolMatrix::operator|=(const BoolMatrix &inMat)
 	throw BMatException(BMatException::INVALID_SIZE,
 			     "BoolMatrix::operator|=()");
 
-    for (UInt32 i=0; i<mNRows*mNCols; i++)
+    for (uint32_t i=0; i<mNRows*mNCols; i++)
 	mMat[i] = mMat[i] || inMat.mMat[i];
     return (*this);
 }
 
-bool &BoolMatrix::operator()(const UInt32 x, const UInt32 y)
+bool &BoolMatrix::operator()(const uint32_t x, const uint32_t y)
 {
     if (x>=mNRows || y>=mNCols)
 	throw BMatException(BMatException::RANGE_ERROR,
@@ -227,8 +227,8 @@ BoolMatrix BoolMatrix::operator*(const BoolMatrix &a)
 			     "BoolMatrix::operator*()");
 
     BoolMatrix temp(mNRows,mNCols);
-    UInt32 i,j,k;
-    UInt32 m;
+    uint32_t i,j,k;
+    uint32_t m;
     for (i=0; i<mNRows; i++)
 	for (j=0; j<mNCols; j++) {
 	    m = i*mNRows;
@@ -253,7 +253,7 @@ BoolMatrix &BoolMatrix::operator=(const BoolMatrix &inMat)
 	mNRows = inMat.mNRows;
 	mNCols = inMat.mNCols;
 	mMat = new bool[mNRows*mNCols];
-	for (UInt32 i=0; i<mNRows*mNCols; i++)
+	for (uint32_t i=0; i<mNRows*mNCols; i++)
 	    mMat[i] = inMat.mMat[i];
     }
     catch (bad_alloc &ba) {
@@ -266,8 +266,8 @@ BoolMatrix &BoolMatrix::operator=(const BoolMatrix &inMat)
 
 ostream &colibry::operator<<(ostream &os, const BoolMatrix &bm)
 {
-    for (UInt32 i=0; i<bm.mNRows; i++) {
-	for (UInt32 j=0; j<bm.mNCols; j++)
+    for (uint32_t i=0; i<bm.mNRows; i++) {
+	for (uint32_t j=0; j<bm.mNCols; j++)
 	    os << bm.mMat[i*bm.mNRows+j];
 	os << endl;
     }
@@ -428,23 +428,23 @@ Automaton::Delta(const string &in, string &out)
 
     // Current state exists and has outgoing transitions
 
-    SigType insig;
-    insig = mIOT.Find(in);
-    if (insig == SymTable::NULLINDEX)
-	throw (AutException(AutException::NO_TRANSITION,"Automaton::Delta()"));
-
-    list<Edge>::iterator atrans;
-    for (atrans = el.begin(); atrans != el.end(); atrans++)
-	if (atrans->input == insig)
-	    if (!atrans->isVisited) {
-		atrans->isVisited = true;
-		atrans->isAbsVisited = true;
-		out = mIOT.GetSymbol(atrans->output);
-		mCurrState = atrans->toNode;
-		return mCurrState->get_state_no();
-	    }
-
-    throw AutException(AutException::NO_TRANSITION,"Automaton::Delta()");
+    try {
+        SigType insig;
+        insig = mIOT.Find(in);
+        list<Edge>::iterator atrans;
+        for (atrans = el.begin(); atrans != el.end(); atrans++)
+        	if (atrans->input == insig)
+        	    if (!atrans->isVisited) {
+            		atrans->isVisited = true;
+            		atrans->isAbsVisited = true;
+            		out = mIOT.GetSymbol(atrans->output);
+            		mCurrState = atrans->toNode;
+            		return mCurrState->get_state_no();
+        	    }
+        throw AutException(AutException::NO_TRANSITION,"Automaton::Delta()");
+    } catch(const SymTable::not_found&) {
+        throw (AutException(AutException::NO_TRANSITION,"Automaton::Delta()"));
+    }
 }
 
 
@@ -519,7 +519,7 @@ Automaton::ReadFile(const string &file_name)
     Line line;
     StateType is, fs;
     char *aux, *in, *out;
-    UInt32 ln = 1;
+    uint32_t ln = 1;
 
     // Get automaton description (1st line)
     file.getline(line,MAXLINELEN);
@@ -647,33 +647,35 @@ Automaton::RemoveTr(const StateType is,
 		     const StateType fs)
 {
     if (mStVec.empty())
-	throw AutException(AutException::EMPTY_AUTOMATON,"Automaton::RemoveTr");
+	   throw AutException(AutException::EMPTY_AUTOMATON,"Automaton::RemoveTr");
 
     if (!IsValidSt(is) || !IsValidSt(fs))
-	throw AutException(AutException::NO_TRANSITION,"Automaton::RemoveTr()");
+	   throw AutException(AutException::NO_TRANSITION,"Automaton::RemoveTr()");
 
     Node *pis, *pfs;
     pis = mStVec[is];
     pfs = mStVec[fs];
 
-    Edge sked;
-    sked.fromNode = pis;
-    sked.toNode = pfs;
-    sked.input = mIOT.Find(in);
-    sked.output = mIOT.Find(out);
-    if (sked.input == SymTable::NULLINDEX || sked.output == SymTable::NULLINDEX)
-	throw AutException(AutException::NO_TRANSITION,"Automaton::RemoveTr()");
+    try {
+        Edge sked;
+        sked.fromNode = pis;
+        sked.toNode = pfs;
+        sked.input = mIOT.Find(in);
+        sked.output = mIOT.Find(out);
 
-    if (!pis->RemoveEdge(sked))
-	throw (AutException(AutException::NO_TRANSITION,"Automaton::RemoveTr"));
-    mTransCount--;
+        if (!pis->RemoveEdge(sked))
+        	throw (AutException(AutException::NO_TRANSITION,"Automaton::RemoveTr"));
+        --mTransCount;
 
-    // If there are no outgoing transitions from 'is' AND no incoming transitions
-    // to 'is', it can be deleted.
-    if (pis->get_edge_list()->empty() && pis->get_indegree()==0) {
-	mStVec[is] = NULL;
-	delete pis;
-	mStateCount--;
+        // If there are no outgoing transitions from 'is' AND no incoming transitions
+        // to 'is', it can be deleted.
+        if (pis->get_edge_list()->empty() && pis->get_indegree()==0) {
+        	mStVec[is] = nullptr;
+        	delete pis;
+        	mStateCount--;
+        }
+    } catch (const SymTable::not_found&) {
+        throw AutException(AutException::NO_TRANSITION,"Automaton::RemoveTr()");
     }
 }
 
@@ -686,7 +688,7 @@ Automaton::HasAbsUnvisited()
     list<Edge>* the_list;
 
     for (StateType i=0; i<mStVec.size(); i++)
-	if ((anode=mStVec[i]) != NULL) {
+	if ((anode=mStVec[i]) != nullptr) {
 	    the_list = anode->get_edge_list();
 	    for (aedge=the_list->begin(); aedge!=the_list->end(); aedge++)
 		if (!aedge->isAbsVisited)
@@ -705,7 +707,7 @@ Automaton::DisplayAbsUnvisited(ostream &os, const string &beforeEach)
     list<Edge>* el;
 
     for (StateType i=0; i<mStVec.size(); i++)
-	if ((anode=mStVec[i]) != NULL) {
+	if ((anode=mStVec[i]) != nullptr) {
 	    if (!anode->IsMarked())
 		os << beforeEach << "State: " << anode->get_state_no() << endl;
 	    el = anode->get_edge_list();
@@ -729,17 +731,17 @@ bool
 Automaton::IsValidSt(const StateType st)
 {
     if (st<mStVec.size())
-	return (mStVec[st]!=NULL);
+    	return (mStVec[st]!=nullptr);
 
     return false;
 }
 
-colibry::UInt32 Automaton::GetStateCount() const
+uint32_t Automaton::GetStateCount() const
 {
     return mStateCount;
 }
 
-colibry::UInt32 Automaton::GetTransCount() const
+uint32_t Automaton::GetTransCount() const
 {
     return mTransCount;
 }
@@ -753,7 +755,7 @@ BoolMatrix *Automaton::GenerateAdjMatrix()
     if (mStVec.size() != mStateCount)
 	throw AutException(AutException::HAS_HOLES,"Automaton::GenerateAdjMatrix()");
 
-    const UInt32 N = GetStateCount();
+    const uint32_t N = GetStateCount();
     if (N==0) return NULL;
 
 
@@ -783,7 +785,7 @@ BoolMatrix *Automaton::GenerateAdjMatrix()
 
 BoolMatrix *Automaton::GenerateTClosure()
 {
-    const UInt32 N = GetStateCount();
+    const uint32_t N = GetStateCount();
     BoolMatrix *adj = GenerateAdjMatrix();
     BoolMatrix *adjka = new BoolMatrix(*adj);		// adj k-1
     BoolMatrix *adjk = new BoolMatrix(N,N);		// adj k
@@ -807,8 +809,8 @@ BoolMatrix *Automaton::GenerateTClosure()
 
 list< list<StateType> > *Automaton::GetConnectedComponents()
 {
-    const UInt32 N = GetStateCount();
-    UInt32 i,j;
+    const uint32_t N = GetStateCount();
+    uint32_t i,j;
     list<StateType> skip;
     list<StateType> ccomp;
     list< list<StateType> > *theList = new list< list<StateType> >;
@@ -922,10 +924,10 @@ AutException::AutException(int type, const string& where)
 #pragma mark -
 #pragma mark === USEFUL FUNCTIONS
 
-bool CompareLines(BoolMatrix *bm, colibry::UInt32 ln1, colibry::UInt32 ln2)
+bool CompareLines(BoolMatrix *bm, uint32_t ln1, uint32_t ln2)
 {
-    const UInt32 N = bm->GetNRows();
-    for (UInt32 i=0; i<N; i++)
+    const uint32_t N = bm->GetNRows();
+    for (uint32_t i=0; i<N; i++)
 	if ((*bm)(ln1,i) != (*bm)(ln2,i))
 	    return false;
     return true;

@@ -9,6 +9,7 @@ set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_STANDARD 14)
 
 set(components
+    SymTable
 	Automaton
 	AutTable
 	Bag
@@ -26,7 +27,6 @@ set(components
 	CSemaphore
 	Singleton
 	Sockets
-	SymTable
 	TextTools
 	Throw_if
 	XML)

@@ -15,142 +15,118 @@ using namespace colibry;
 // ----- SymTable FUNCTIONS -----
 // -------------------------------
 
-SymTable::SymTable()
+SymTable::SymTable() : size_{0}
 {
-    mIOT.reserve(RESERVED_SIZE);		// Reserve space for growth
-    m_size = 0;
+	// const unsigned int resource_allocation = 4096;
+	// iot_.reserve(resource_allocation);		// Reserve space for growth
 }
 
 SymTable::~SymTable()
 {
-    Clear();
+	Clear();
 }
 
 // ----- LookUp -------------------------------------------------------
 // Return index of the string in the SymTable. Create new, if necessary.
 
-UInt32 SymTable::LookUp(const string &inStr)
-    throw (bad_alloc)
+uint32_t SymTable::LookUp(const string &inStr)
 {
-    UInt32 insertPlace = mIOT.size();		// by default, at the end
-    UInt32 sz = insertPlace;
+	uint32_t insertPlace = iot_.size();		// by default, at the end
+	const uint32_t sz = insertPlace;
 
-    // Check if signal is already in the table
-    // Compute insert place
-    UInt32 i,j;
-    for (i=0; i<sz; i++)
-    	if (mIOT[i] != NULL) {			// may have holes
-	    if (mIOT[i]->symbol == inStr)
-		return i;
-    	} else {
-	    // First "hole" found must be the insertPlace
-	    insertPlace = i;
-	    break;		// For performance
-    	}
+	// Check if signal is already in the table
+	// Compute insert place
+	uint32_t i;
+	for (i=0; i<sz; ++i) {
+		if (iot_[i]) {			// may have holes
+			if (iot_[i]->symbol == inStr) return i;
+		} else {
+			// First "hole" found must be the insertPlace
+			insertPlace = i;
+			break;		// For performance
+		}
+	}
 
-    // Continue search (avoiding insertPlace computation)
-    for (j=i+1; j<sz; j++)
-    	if (mIOT[j] != NULL)
-	    if (mIOT[j]->symbol == inStr)
-		return i;
+	// Continue search (avoiding insertPlace computation)
+	for (++i; i<sz; ++i)
+		if (iot_[i])
+			if (iot_[i]->symbol == inStr)
+				return i;
 
-    if (insertPlace == sz) {
-    	// Table needs to grow
-    	mIOT.push_back(new TItem(inStr,inStr[0] == '*'));
-    	insertPlace = mIOT.size()-1;
-    	if (mIOT.capacity() == mIOT.size()) {
-	    // Table will be rellocated (reserve next "block")
-	    mIOT.reserve(mIOT.size() + RESERVED_SIZE);
-    	}
-    } else {
-    	// Fill hole in table
-	mIOT[insertPlace] = new TItem(inStr,inStr[0] == '*');
-    }
+	// not found: insert
 
-    m_size++;
+	if (insertPlace == sz) {
+		// Table needs to grow
+		iot_.emplace_back(make_unique<TItem>(inStr, inStr[0] == '*'));
+		insertPlace = sz;
+	} else {
+		// Fill hole in table
+		iot_[insertPlace] = make_unique<TItem>(inStr,inStr[0] == '*');
+	}
 
-    return insertPlace;
+	++size_;
+	return insertPlace;
 }
 
-UInt32 SymTable::Find(const string &inSymbol)
-    throw ()
+uint32_t SymTable::Find(const string &inSymbol)
 {
-    UInt32 sz = mIOT.size();
-    for (UInt32 i=0; i<sz; i++)
-    	if (mIOT[i] != NULL)
-	    if (inSymbol == mIOT[i]->symbol)
-		return i;
-
-    return NULLINDEX;
+	uint32_t sz = iot_.size();
+	for (uint32_t i=0; i<sz; ++i)
+		if (iot_[i])
+			if (inSymbol == iot_[i]->symbol)
+				return i;
+	throw not_found{inSymbol};
 }
 
 void SymTable::Remove(const string &inSymbol)
-    throw (RangeError)
 {
-    Remove(Find(inSymbol));
+	Remove(Find(inSymbol));
 }
 
-void SymTable::Remove(const UInt32 inSigNo)
-    throw (RangeError)
+void SymTable::Remove(const uint32_t inSigNo)
 {
-    if (!IsValid(inSigNo))
-	throw RangeError(inSigNo, "SymTable::Remove()");
+	if (!IsValid(inSigNo))
+		throw not_found(to_string(inSigNo));
 
-    TItem *rem = mIOT[inSigNo];
-    mIOT[inSigNo] = NULL;
-
-    m_size--;
-
-    delete rem;
+	iot_[inSigNo].reset();
+	--size_;
 }
 
-
-string &SymTable::GetSymbol(const UInt32 si)
-    throw (RangeError)
-    // Better return a copy than a pointer, since the
-    // vector could grow and be rellocated.
+string &SymTable::GetSymbol(const uint32_t si)
+	// Better return a copy than a pointer, since the
+	// vector could grow and be rellocated.
 {
-    if (IsValid(si))
-	return mIOT[si]->symbol;
-
-    throw RangeError(si, "SymTable::GetSymbol()");
+	if (IsValid(si))
+		return iot_[si]->symbol;
+	throw not_found{to_string(si)};
 }
 
-
-void SymTable::Clear(void)
-    throw()
+void SymTable::Clear()
 {
-    for (UInt32 i=0; i<mIOT.size(); i++)
-    	if (mIOT[i]) {
-	    delete mIOT[i];
-	    mIOT[i] = NULL;
-    	}
-    m_size = 0;
+	iot_.clear();
+	size_ = 0;
 }
 
-bool SymTable::IsValid(const UInt32 signo)
-    const throw()
+bool SymTable::IsValid(const uint32_t signo) const
 {
-    if (signo < mIOT.size())
-		return (mIOT[signo] != NULL);
-    return false;
+	if (signo < iot_.size())
+		return static_cast<bool>(iot_[signo]);
+	return false;
 }
 
-void SymTable::Mark(const UInt32 inSigNo, bool inMarked)
-    throw(RangeError)
+void SymTable::Mark(const uint32_t inSigNo, bool inMarked)
 {
-    if (!IsValid(inSigNo))
-	throw RangeError(inSigNo, "SymTable::Mark()");
+	if (!IsValid(inSigNo))
+		throw not_found(to_string(inSigNo));
 
-    mIOT[inSigNo]->marked = inMarked;
+	iot_[inSigNo]->marked = inMarked;
 }
 
-bool SymTable::IsMarked(const UInt32 signo) const
-    throw (RangeError)
+bool SymTable::IsMarked(const uint32_t signo) const
 {
-    // Invalid signal numbers are not marked
-    if (!IsValid(signo))
-	throw(RangeError(signo, "SymTable::IsMarked()"));
+	// Invalid signal numbers are not marked
+	if (!IsValid(signo))
+		throw not_found(to_string(signo));
 
-    return mIOT[signo]->marked;
+	return iot_[signo]->marked;
 }

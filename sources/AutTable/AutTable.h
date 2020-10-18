@@ -25,8 +25,8 @@ namespace colibry {
 
 	// General typedefs
 
-	typedef UInt32 StateType;
-	typedef UInt32 SigType;
+	using StateType = std::uint32_t;
+	using SigType = std::uint32_t;
 
 	//
 	//	* AUTTABLE INTERFACE
@@ -82,7 +82,7 @@ namespace colibry {
 	public:
 
 		// Methods
-		AutTable(const UInt32 inMaxStates=1);
+		AutTable(const std::uint32_t inMaxStates=1);
 		AutTable(const std::string &inFileName);
 		virtual ~AutTable();
 
@@ -127,8 +127,8 @@ namespace colibry {
 		std::list<TransitionAT>*	GetInl(const StateType staten);
 		std::list<TransitionAT>*	GetOutl(const StateType staten);
 
-		UInt32 GetNSt() const { return fNSt; }
-		UInt32 GetNTr() const { return fNTr; }
+		std::uint32_t GetNSt() const { return fNSt; }
+		std::uint32_t GetNTr() const { return fNTr; }
 		StateType GetMaxStn() const	{ return fMaxStN; }
 		bool IsValidSt(const StateType st) const;
 
@@ -150,10 +150,10 @@ namespace colibry {
 
 		StateType	fInitState;	// Initial state
 		StateType	fCurrent;	// Current state
-		UInt32	fNSt;    		// Number of states
-		UInt32	fNTr;   		// Number of transitions
+		std::uint32_t	fNSt;    		// Number of states
+		std::uint32_t	fNTr;   		// Number of transitions
 		StateType	fMaxStN;	// Maximum state number
-		UInt32	fMaxStates;     	// Maximum number of states
+		std::uint32_t	fMaxStates;     	// Maximum number of states
 	};
 
 }    // colibry namespace

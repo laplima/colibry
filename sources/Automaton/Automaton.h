@@ -28,27 +28,27 @@ namespace colibry {
 
     typedef unsigned short UInt16;
 
-    typedef UInt32 StateType;
-    typedef UInt32 SigType;
+    using StateType = std::uint32_t;
+    using SigType = std::uint32_t;
 
     struct Node;
 
     struct Edge {
-	Edge() {}
-	Edge(const Edge &);
+		Edge() {}
+		Edge(const Edge &);
 
-	bool	operator==(const Edge &ae) const;
-	Edge&	operator=(const Edge &ae);
+		bool	operator==(const Edge &ae) const;
+		Edge&	operator=(const Edge &ae);
 
-	friend std::ostream& operator<<(std::ostream &os,
-					const colibry::Edge &out);
+		friend std::ostream& operator<<(std::ostream &os,
+						const colibry::Edge &out);
 
-	SigType input;
-	SigType output;
-	bool isVisited;
-	bool isAbsVisited;
-	Node *fromNode;
-	Node *toNode;
+		SigType input;
+		SigType output;
+		bool isVisited;
+		bool isAbsVisited;
+		Node *fromNode;
+		Node *toNode;
     };
 
 
@@ -64,31 +64,31 @@ namespace colibry {
     class Node {
     public:
 
-	Node();
-	Node(StateType st);
-	Node(const Node &original);
+		Node();
+		Node(StateType st);
+		Node(const Node &original);
 
-	virtual Node &operator=(const Node &nd);
-	virtual bool operator==(const Node &nd) const;
+		virtual Node &operator=(const Node &nd);
+		virtual bool operator==(const Node &nd) const;
 
-	virtual void AddEdge(Edge &inEdge);
-	virtual bool RemoveEdge(Edge &inEdge);
+		virtual void AddEdge(Edge &inEdge);
+		virtual bool RemoveEdge(Edge &inEdge);
 
-	virtual void Mark(const bool inMark=true) { isVisited = inMark; }
-	virtual bool IsMarked() const { return isVisited; }
+		virtual void Mark(const bool inMark=true) { isVisited = inMark; }
+		virtual bool IsMarked() const { return isVisited; }
 
-	StateType         get_state_no() const { return stateNo; }
-	std::list<Edge>* get_edge_list() { return &edgeList; }
-	UInt32            get_indegree() const { return inDegree; }
+		StateType get_state_no() const { return stateNo; }
+		std::list<Edge>* get_edge_list() { return &edgeList; }
+		std::uint32_t get_indegree() const { return inDegree; }
 
-	friend std::ostream &operator<<(std::ostream &os, const Node &nd);
+		friend std::ostream &operator<<(std::ostream &os, const Node &nd);
 
-    private:
+	    private:
 
-	StateType	   stateNo;             // info
-	bool		   isVisited;
-	UInt32		   inDegree;		// # of incoming transitions
-	std::list<Edge>   edgeList;
+		StateType	   stateNo;             // info
+		bool		   isVisited;
+		std::uint32_t		   inDegree;		// # of incoming transitions
+		std::list<Edge>   edgeList;
     };
 
 
@@ -132,10 +132,10 @@ namespace colibry {
 	};
 
 	BMatException(int type, const std::string& where="",
-		      UInt32 row=0, UInt32 column=0);
+		      std::uint32_t row=0, std::uint32_t column=0);
 
     protected:
-	UInt32 m_row,m_column;
+	std::uint32_t m_row,m_column;
     };
 
     // ---------------------------------------------------------------------
@@ -146,25 +146,25 @@ namespace colibry {
     public:
 
 	// Constructor/destructors
-	BoolMatrix(const UInt32 rows, const UInt32 columns);
+	BoolMatrix(const std::uint32_t rows, const std::uint32_t columns);
 	BoolMatrix(const BoolMatrix &inMat);
 	virtual ~BoolMatrix();
 
-	UInt32 GetNRows() const { return mNRows; }
-	UInt32 GetNCols() const { return mNCols; }
+	std::uint32_t GetNRows() const { return mNRows; }
+	std::uint32_t GetNCols() const { return mNCols; }
 
 	// Operators
 	virtual BoolMatrix& operator=(const BoolMatrix &inMat);
 
 	virtual BoolMatrix& operator|=(const BoolMatrix &inMat);
 	virtual BoolMatrix  operator*(const BoolMatrix &inMat);
-	virtual bool&        operator()(const UInt32 x, const UInt32 y);
+	virtual bool&        operator()(const std::uint32_t x, const std::uint32_t y);
 
 	friend std::ostream &operator<<(std::ostream &os, const BoolMatrix &bm);
 
     protected:
 
-	UInt32 mNCols, mNRows;
+	std::uint32_t mNCols, mNRows;
 
     private:
 
@@ -273,8 +273,8 @@ namespace colibry {
 	virtual BoolMatrix *GenerateTClosure();
 	virtual std::list< std::list<StateType> > *GetConnectedComponents();
 
-	virtual UInt32 GetStateCount() const;	// Returns no. of states in automaton
-	virtual UInt32 GetTransCount() const;	// Returns no. of transitions in automaton
+	virtual std::uint32_t GetStateCount() const;	// Returns no. of states in automaton
+	virtual std::uint32_t GetTransCount() const;	// Returns no. of transitions in automaton
 
 	// iostream output friend function.
 	friend std::ostream& operator<<(std::ostream &os, colibry::Automaton &a);
@@ -285,8 +285,8 @@ namespace colibry {
 	Node *mInitialState;
 	Node *mCurrState;
 	bool mIsDeterministic;		     // Is automaton deterministic?
-	UInt32 mTransCount;     	     // # of transitions in automaton
-	UInt32 mStateCount;		     // # of states in automaton
+	std::uint32_t mTransCount;     	     // # of transitions in automaton
+	std::uint32_t mStateCount;		     // # of states in automaton
     };
 
 };      // namespace
