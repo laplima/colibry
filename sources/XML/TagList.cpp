@@ -1,6 +1,6 @@
 /*
  *  TagList.cpp
- *  
+ *
  *
  *  Created by Luiz Lima Jr. on Tue Jul 15 2003.
  *  Copyright (c) 2003 LAPLJ. All rights reserved.
@@ -76,7 +76,7 @@ Tag* TagList::GetTag(const TagPath& tpath, int tagno)
 {
     if (tpath.empty())
 	return NULL;
-    
+
     TagPath path(tpath.begin()+1,tpath.end());	// skip first
     Tag* tag;
     TagList* subtags;
@@ -95,7 +95,7 @@ Tag* TagList::GetTag(const TagPath& tpath, int tagno)
 		    // found
 		    return tag;
 		}
-	    }	
+	    }
 	}
     }
     return NULL;
@@ -128,7 +128,7 @@ ostream& colibry::operator<<(ostream& os, colibry::TagList& xml)
 }
 
 
-istream& operator>>(istream& is, TagList& xml) throw (XMLException)
+istream& operator>>(istream& is, TagList& xml)
 {
     // Read entire input stream into "input"
     string input;
@@ -139,7 +139,7 @@ istream& operator>>(istream& is, TagList& xml) throw (XMLException)
 	c = is.get();
     }
     // is.clear();
-    
+
     // Parse "input"
     try {
 	xml.ParseXMLString(input);
@@ -153,19 +153,19 @@ istream& operator>>(istream& is, TagList& xml) throw (XMLException)
 }
 
 
-void TagList::ParseXMLString(string& xmlstr) throw (XMLException)
+void TagList::ParseXMLString(string& xmlstr)
 {
     // Doesn't require that the self-closed tags have " " before "/>"...
     // Comments are discarded (and therefore not saved or printed out...)
-    
+
     Tag* tag;
     string::size_type pos1, pos2, endtag;
     bool is_self_closed = false;
 
     Clear();    // clears current TagList
-    
+
     // ----- Find opening tag
-    
+
     pos1 = xmlstr.find("<");
     while (pos1 != string::npos) {
 
@@ -179,7 +179,7 @@ void TagList::ParseXMLString(string& xmlstr) throw (XMLException)
 	    pos1 = xmlstr.find("<");
 	    continue;
 	}
-	
+
 	pos2 = FindFirstNotInsideQuotes(">",xmlstr);
 	if (pos1 == string::npos || pos2 == string::npos)
 	    throw XMLException(XMLException::WRONGFORMAT,"tag","TagList::ParseXMLString");
@@ -188,18 +188,18 @@ void TagList::ParseXMLString(string& xmlstr) throw (XMLException)
 	string open_tag(xmlstr.substr(pos1+1,pos2-pos1-1));
 
 	// ----- Analyse opening tag
-	
+
 	// Parse name + parameters
 	string tag_name, par_name, par_value;
-	
+
 	// Find name
 	pos1 = open_tag.find(" ");
 	tag_name = open_tag.substr(0,pos1);
-	
+
 	tag = new Tag(tag_name);
-	
+
 	// ----- Find body tag
-	
+
 	string body;
 	if (xmlstr[pos2] != '/' && xmlstr[pos2] != '?') {
 	    // there is some body
@@ -218,7 +218,7 @@ void TagList::ParseXMLString(string& xmlstr) throw (XMLException)
 	}
 
 	// Parse parameters
-	
+
 	if (pos1 != string::npos) {
 	    // pos1 points to " " => has parameters
 	    pos2 = open_tag.find("=",pos1);
@@ -245,11 +245,11 @@ void TagList::ParseXMLString(string& xmlstr) throw (XMLException)
 			pos2 = open_tag.find("=",pos1);
 		    }
 		}
-		
+
 		tag->AddParameter(par_name, par_value);
 	    }
 	}
-	
+
 	if (!is_self_closed) {
 	    // Parse body
 	    pos1 = body.find("<");
@@ -261,11 +261,11 @@ void TagList::ParseXMLString(string& xmlstr) throw (XMLException)
 		(tag->GetSubtagList())->ParseXMLString(body);
 	    }
 	}
-	
+
 	push_back(tag);
-	
+
 	xmlstr.erase(0,endtag-1);
-	
+
 	pos1 = xmlstr.find("<");
     }
 }
@@ -280,16 +280,16 @@ string::size_type FindFirstNotInsideQuotes(const string& sea,
     int count=0;
     string::size_type pos1 = 0;
     string::size_type candidate = 0;
-    
+
     candidate = body.find_first_of(sea);
     while (candidate != string::npos) {
-	
+
 	pos1 = body.find("\"",pos1);
 	while (pos1 < candidate && pos1 != string::npos) {
 	    count++;
 	    pos1 = body.find("\"",pos1+1);
 	}
-	
+
 	if (count % 2 == 0)
 	    return candidate;
 	candidate = body.find_first_of(sea,candidate+1);

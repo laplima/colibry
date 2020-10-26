@@ -1,4 +1,8 @@
 //
+//
+//          DEPRECATED!! USE IShell for new projects
+//
+//
 // InteractiveShell
 // A replacement for CmdLineParser class
 //
@@ -14,7 +18,7 @@
 //
 //  // All these forms are equivalent
 //	namespace Cmd {
-//		void cmd1(const Tokens& tks, void* context);
+//		void cmd1(const Arguments& tks, void* context);
 //		DECLARE_ISHELL_FUNC(cmd2);
 //		DECLARE_ISHELL_FUNC(exit);
 //		DECLARE_ISHELL_FUNC(help);
@@ -29,7 +33,7 @@
 //		("exit", Cmd::exit, "exit the program")
 //		("help", Cmd::help, "list commands");
 //
-//  Tokens args_cmd1 = { "-m", "--minor", "maxi" };
+//  Arguments args_cmd1 = { "-m", "--minor", "maxi" };
 //  ish->SetArg0Options("cmd1", args_cmd1);
 //
 //	string cmd;
@@ -53,7 +57,7 @@
 //	{
 //		if (args.size()<2)
 //			throw SyntaxError{args[0]};
-//		// body, when tokens/args are needed => args
+//		// body, when Arguments/args are needed => args
 //	}
 //
 //	ISHELL_FUNC_NOARGS(Cmd::exit)
@@ -74,9 +78,11 @@
 #include <vector>
 #include <iostream>
 #include <stdexcept>
+#include <memory>
+#include <functional>
 
 // Hook Function Macros (helpers)
-#define HOOK_FUNCTION(cmdf,tks,ctx) 	void cmdf(const colibry::Tokens& tks, void* ctx)
+#define HOOK_FUNCTION(cmdf,tks,ctx) 	void cmdf(const colibry::Arguments& tks, void* ctx)
 #define DECLARE_ISHELL_FUNC(cmdf)		HOOK_FUNCTION(cmdf,_tks,_ctx)
 #define ISHELL_FUNC_FULL(cmdf,tks,ctx)	HOOK_FUNCTION(cmdf,tks,ctx)
 #define ISHELL_FUNC(cmdf,tks)			HOOK_FUNCTION(cmdf,tks,_ctx)
@@ -84,12 +90,12 @@
 
 namespace colibry {
 
-	using Tokens = std::vector<std::string>;
+	using Arguments = std::vector<std::string>;
 	using Groups = std::vector<std::string>;
-    using HookFunction = void (*)(const Tokens& tks, void* context);
+    using HookFunction = std::function<void(const Arguments& args, void* context)>;
 
 	struct Command {
-		Command() : func{nullptr} {}
+		// Command() : func{nullptr} {}
 		Command(const std::string& i,
 			HookFunction f,
 			const std::string& d,
@@ -100,7 +106,7 @@ namespace colibry {
 		HookFunction func;	// function to be called when id is typed
 		std::string doc;	// menu syntax help
 		Groups groups;		// command groups
-		Tokens arg0_opts;	// options for args (after command name)
+		Arguments arg0_opts;	// options for args (after command name)
 	};
 
 	//
@@ -147,10 +153,10 @@ namespace colibry {
 	class InteractiveShell {
 	public:
 		static InteractiveShell* Instance(); // obtain obj pointer (singleton)
-		virtual ~InteractiveShell();
+		// virtual ~InteractiveShell();
 
 		virtual void SetCtx(void* ctx) { m_context = ctx; }
-		virtual void SetArg0Options(const std::string& cmd, const Tokens& opts);
+		virtual void SetArg0Options(const std::string& cmd, const Arguments& opts);
 		virtual EasyInit RegisterCmds() { return EasyInit(this); }
 		virtual void Exec(const std::string& cmd_line, void* ctx=nullptr);	// overrides global context
 		virtual void Help(const Groups& gs=Groups()); // default = all groups
@@ -169,7 +175,7 @@ namespace colibry {
 		Command& find_command(const std::string& cmd);	// may throw UnknownCommand
 		void addcmd(const Command& c);
 
-		static void Parse(const std::string &line, Tokens &pv);	// line => tokens
+		static void Parse(const std::string &line, Arguments &pv);	// line => Arguments
 		// readline
 		static char** my_completion(const char* text, int start, int end);
 		static char* command_generator(const char* text, int state);
@@ -179,10 +185,10 @@ namespace colibry {
 
 	private:
 
-		static InteractiveShell* s_pinstance;
+		static std::unique_ptr<InteractiveShell> s_pinstance;
 		void* m_context;
 		static bool s_file_completion;		// defaults to false
-		static Tokens* s_args0;				// argument options of the current command
+		static Arguments* s_args0;				// argument options of the current command
 	};
 };
 

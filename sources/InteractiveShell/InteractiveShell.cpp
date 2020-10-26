@@ -19,7 +19,11 @@ using namespace colibry;
 using namespace std;
 
 // Fixed-length tabs
-#define ABSTAB(t) "\e[80D\e[" << t << "C"
+inline string abstab(int t)
+{
+	return string{char(0x1b)} + "[80D" + char(0x1b) + "[" + to_string(t) + "C";
+}
+// #define ABSTAB(t) char(0x1b) << "[80D" << char(0x1b) << "[" << t << "C"
 
 // helpers prototypes
 char* dupstr(const char* t);
@@ -48,17 +52,18 @@ EasyInit& EasyInit::operator()(const std::string& id, HookFunction hook,
 // InteractiveShell
 //
 
-InteractiveShell* InteractiveShell::s_pinstance = nullptr;
+unique_ptr<InteractiveShell> InteractiveShell::s_pinstance;
 
 InteractiveShell* InteractiveShell::Instance()
 {
-    if (s_pinstance == nullptr)
-	   s_pinstance = new InteractiveShell();
-    return s_pinstance;
+    if (!s_pinstance)
+    	// s_pinstance = make_unique<InteractiveShell>();
+    	s_pinstance.reset(new InteractiveShell());
+	return s_pinstance.get();
 }
 
 bool InteractiveShell::s_file_completion = false;
-Tokens* InteractiveShell::s_args0 = nullptr;
+Arguments* InteractiveShell::s_args0 = nullptr;
 
 InteractiveShell::InteractiveShell() : m_context{nullptr}
 {
@@ -68,13 +73,6 @@ InteractiveShell::InteractiveShell() : m_context{nullptr}
     static char space[2] = " ";
     rl_completer_word_break_characters = space;
 	rl_char_is_quoted_p = &quote_detector;
-}
-
-InteractiveShell::~InteractiveShell()
-{
-	if (s_pinstance != nullptr)
-		delete s_pinstance;
-    s_pinstance = nullptr;
 }
 
 InteractiveShell& InteractiveShell::operator=(const InteractiveShell& cl)
@@ -101,7 +99,7 @@ void InteractiveShell::addcmd(const Command& c)
 	}
 }
 
-void InteractiveShell::SetArg0Options(const std::string& cmd, const Tokens& opts)
+void InteractiveShell::SetArg0Options(const std::string& cmd, const Arguments& opts)
 {
 	Command& c = find_command(cmd);
 	c.arg0_opts = opts;
@@ -113,7 +111,7 @@ void InteractiveShell::Exec(const std::string& cmd_line, void* context)
 	   throw EmptyLine();
 
     // parse input string
-    Tokens tks;
+    Arguments tks;
     Parse(cmd_line, tks);
 
     Command& c = find_command(tks[0]);
@@ -144,7 +142,7 @@ void InteractiveShell::Help(const Groups& gs)
 	if (gs.empty()) {
 		// show all commands
 		for (const auto& c : m_cmdvec)
-			cout << "   " << c.id << ABSTAB(max) << ": " << c.doc << endl;
+			cout << "   " << c.id << abstab(max) << ": " << c.doc << endl;
 	} else {
 		set<string> printed;
 		for (auto& g : gs) {
@@ -152,7 +150,7 @@ void InteractiveShell::Help(const Groups& gs)
 				if (c.groups.empty() || find(c.groups.begin(),c.groups.end(),g)!=c.groups.end()) {
 					if (printed.count(c.id) == 0) {
 						printed.insert(c.id);
-						cout << "   " << c.id << ABSTAB(max) << ": " << c.doc << endl;
+						cout << "   " << c.id << abstab(max) << ": " << c.doc << endl;
 					}
 				}
 			}
@@ -160,7 +158,7 @@ void InteractiveShell::Help(const Groups& gs)
 	}
 }
 
-void InteractiveShell::Parse(const string &line, Tokens &tks)
+void InteractiveShell::Parse(const string &line, Arguments &tks)
 {
 	tks.clear();
 	if (line.empty()) return;
@@ -173,19 +171,18 @@ void InteractiveShell::Parse(const string &line, Tokens &tks)
 
 string InteractiveShell::readline(const std::string& prompt)
 {
-	char* line = ::readline(prompt.c_str());
-	if (line == nullptr)
+	unique_ptr<char[]> line{::readline(prompt.c_str())};	// acquire ownership
+
+	if (!line)
+		return string();
+
+	char* cropped = crop(line.get());
+
+	if (*cropped == '\0')
 		return string{""};
 
-	char* cropped = crop(line);
-
-	if (*cropped == '\0') {
-		delete [] line;
-		return string{""};
-	}
 	string cmd{cropped};
 	add_history(cropped);
-	delete [] line;
 	return cmd;
 }
 
