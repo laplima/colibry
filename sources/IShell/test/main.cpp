@@ -60,8 +60,8 @@ int main(int argc, char* argv[])
 
 	auto ish = colibry::IShell<Context>::instance();
 	ish->register_cmds()
-		("um", cmd1, "this is the first command")
-		("dois", cmd2, "second");
+		("dois", cmd2, "second")
+		("um", cmd1, "this is the first command");
 
 	ish->set_arg0_options("dois", {"par", "impar", "primo"});
 

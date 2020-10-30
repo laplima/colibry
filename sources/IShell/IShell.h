@@ -27,6 +27,7 @@
 //     Context c = { 123 };
 //
 //     auto ish = colibry::IShell<Context>::instance();
+//     // registration will keep the orden
 //     ish->register_cmds()
 //              ("command", cmd1, "description")
 //              ("other", other, "description of other command");
@@ -134,7 +135,7 @@ namespace colibry {
 		virtual void add_cmd(const std::string& cmd, const CmdData& c);
 
 		// readline-related
-		static bool file_completion;
+		static bool file_completion;	// UNUSED
 		static Arguments* args0;		// argument options of the current command
 
 		static char* command_generator(const char* text, int state);
@@ -150,11 +151,14 @@ namespace colibry {
 		virtual void exec(const std::string& cmdline, C* ctx=nullptr);
 		virtual std::string read_exec(const std::string& prompt, C* ctx=nullptr);
 		virtual void help(std::ostream& os=std::cout);
+        virtual std::string docs(const std::string& cmd);
 		virtual EasyInit register_cmds() { return EasyInit{this}; }
 
 	protected:
 
-		std::map<std::string, CmdData> cmap_;
+		using CommandMap = std::map<std::string, CmdData>;
+		CommandMap cmap_;
+		std::vector<typename CommandMap::iterator> help_order_;
 	};
 
 	// ---------------------------------------------------------------------
@@ -243,6 +247,7 @@ namespace colibry {
 	void IShell<C>::add_cmd(const std::string& cmd, const CmdData& c)
 	{
 		cmap_[cmd] = c;
+		help_order_.push_back(cmap_.find(cmd));
 	}
 
 	template<typename C>
@@ -288,21 +293,47 @@ namespace colibry {
 	template<typename C>
 	void IShell<C>::help(std::ostream& os)
 	{
+		// std::vector<std::string> sorted;
+
 		// Find max command size
 		unsigned short max{0};
-		for (auto& [cmd, cdata] : cmap_)
+		for (auto& [cmd, cdata] : cmap_) {
+			// sorted.emplace_back(cmd);
 			if (std::size(cmd) > max)
 				max = std::size(cmd);
+		}
 		max += 4;
+
+		// std::sort(sorted.begin(), sorted.end());
 
 		auto abstab = [](unsigned short t) -> std::string {
 			std::string esc{char(0x1b)};
 			return esc + "[80D" + esc + "[" + std::to_string(t) + "C";
 		};
 
-		for (auto& [cmd, cdata] : cmap_)
-			os << std::setw(max) << cmd << abstab(max) << " : " << cdata.desc << std::endl;
+		for (auto &c : help_order_)
+			os << std::setw(max) << c->first << abstab(max) << " : " << c->second.desc << std::endl;
 	}
+
+    template<typename C>
+    std::string IShell<C>::docs(const std::string& cmd)
+    {
+        auto cdata = find_command(cmd);
+        std::ostringstream ss;
+        ss << cdata.desc;
+        if (!cdata.arg0_opts.empty()) {
+            ss << "\n" << "(";
+            bool first = true;
+            for (auto& o : cdata.arg0_opts)
+                if (first) {
+                    first = false;
+                    ss << o;
+                } else
+                    ss << ", " << o;
+            ss << ")";
+        }
+        return ss.str();
+    }
 
 	// readline-related ---------------------------------------------------
 
