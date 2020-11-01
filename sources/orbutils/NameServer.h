@@ -13,6 +13,7 @@
 
 #include <memory>
 #include <string>
+#include "ORBManager.h"
 #include <orbsvcs/CosNamingC.h>
 
 namespace colibry {
@@ -20,20 +21,23 @@ namespace colibry {
     class NameServer {
     protected:
 
-        static CORBA::ORB_var s_nsorb;
-        static bool s_ownorb;           // do I own the orb?
-        static std::unique_ptr<NameServer> s_instance;
-        CosNaming::NamingContext_var m_ns;
+        static CORBA::ORB_var nsorb_;
+        static bool ownorb_;           // do I own the orb?
+        static std::unique_ptr<NameServer> instance_;
+
+        CosNaming::NamingContext_var ns_;
 
     protected:
 
         NameServer();
-        virtual void init();
         virtual void verifyNamingContexts(const CosNaming::Name& n);
 
     public:
 
-        static NameServer* Instance(CORBA::ORB_ptr orb = CORBA::ORB::_nil()); // create new ORB, if none provided
+    	 // create new ORB, if none provided
+    	static NameServer* Instance(int argc, char* argv[]); // create own ORB
+        static NameServer* Instance(CORBA::ORB_ptr orb = CORBA::ORB::_nil());
+        static NameServer* Instance(ORBManager& om) { return Instance(om.orb()); }
         virtual ~NameServer();
 
         // Resolve
