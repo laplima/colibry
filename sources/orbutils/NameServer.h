@@ -35,7 +35,7 @@ namespace colibry {
     public:
 
     	 // create new ORB, if none provided
-    	static NameServer* Instance(int argc, char* argv[]); // create own ORB
+    	static NameServer* Instance(int argc, char* argv[]); // always create own ORB
         static NameServer* Instance(CORBA::ORB_ptr orb = CORBA::ORB::_nil());
         static NameServer* Instance(ORBManager& om) { return Instance(om.orb()); }
         virtual ~NameServer();

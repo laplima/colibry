@@ -41,10 +41,14 @@ unique_ptr<NameServer> NameServer::instance_{nullptr};
 //
 NameServer* NameServer::Instance(int argc, char* argv[])
 {
-	if (CORBA::is_nil(nsorb_)) {
-		nsorb_ = CORBA::ORB_init(argc, argv, "NS-ORB");
-		ownorb_ = true;
+	if (!CORBA::is_nil(nsorb_) && ownorb_) {
+		nsorb_->destroy();
+		nsorb_ = CORBA::ORB::_nil();
 	}
+
+	nsorb_ = CORBA::ORB_init(argc, argv, "NS-ORB");
+	ownorb_ = true;
+
 	if (!instance_)
 		instance_ = unique_ptr<NameServer>{new NameServer};
 	return instance_.get();
