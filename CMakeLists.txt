@@ -23,6 +23,7 @@ set(components
 	OptionManager
 	orbutils
 	Property
+    SimpleProperty
 	RedBlackTree
 	SafeQueue
 	CSemaphore

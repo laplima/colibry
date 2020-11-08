@@ -1,34 +1,29 @@
 #include <iostream>
 #include <string>
+#include <functional>
 #include "../OIShell.h"
 
 using std::cout;
 using std::endl;
-
-class UnknownCommand : public std::runtime_error {
-public:
-	UnknownCommand(const std::string& s) : std::runtime_error{s} {}
-};
-
-class SyntaxError : public std::runtime_error {
-public:
-	SyntaxError(const std::string& w) : std::runtime_error{w} {}
-};
+using std::string;
+using colibry::ishell::Arguments;
 
 class CommandHandler : public colibry::ISObserver {
 public:
 
-	void dispatch(const colibry::ishell::Arguments& args) override {
-		const std::string& cmd = args[0];
-		const colibry::ishell::Arguments& pars = {args.begin()+1, args.end()};
+	void dispatch(const string& cmd, const Arguments& args) override
+	{
+		if (!is_valid(cmd)) {
+			std::cerr << "Unknown command" << endl;
+			return;
+		}
+
 		if (cmd == "exit")
 			exit();
 		else if (cmd == "help")
 			help();
 		else if (cmd == "test")
-			test(pars);
-		else
-			throw UnknownCommand{args[0]};
+			test(args);
 	}
 
 protected:
@@ -47,7 +42,6 @@ protected:
 		cout << "]" << endl;
 	}
 };
-
 
 int main(int argc, char* argv[])
 {

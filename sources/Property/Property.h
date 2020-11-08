@@ -31,11 +31,12 @@
 //	  int getValue() const { ... }
 //
 
-#ifndef __NCOLIB_PROPERTY_H__
-#define __NCOLIB_PROPERTY_H__
+#ifndef __PROPERTY_H__
+#define __PROPERTY_H__
 
 #include <iostream>
 #include <string>
+#include <stdexcept>
 
 namespace colibry {
 
@@ -43,13 +44,9 @@ namespace colibry {
 	// PropException
 	//
 
-	class PropException {
+	class PropException : std::runtime_error {
 	public:
-		PropException(const std::string& w) : _what(w) {}
-		friend std::ostream& operator<<(std::ostream& os, const PropException& e)
-		{ return (os << e._what); }
-	private:
-		std::string _what;
+		PropException(const std::string& w) : std::runtime_error{w} {}
 	};
 
 	//
@@ -59,7 +56,7 @@ namespace colibry {
 	template<typename Container, typename ValueType, char PropType>
 	class Property {
 	public:
-		Property() : _cobj(NULL), _get(NULL), _set(NULL)
+		Property() : _cobj(nullptr), _get(nullptr), _set(nullptr)
 		{
 			if (PropType != 'r' && PropType != 'w' && PropType != 'a')
 				throw PropException("Invalid property type (only 'r', 'w' or 'a' are allowed)");
@@ -67,7 +64,7 @@ namespace colibry {
 
 		Property(Container* cObject, ValueType(Container::*pGet)() const,
 			void (Container::*pSet)(const ValueType))
-		: _cobj(cObject), _get(NULL), _set(NULL)
+		: _cobj(cObject), _get(nullptr), _set(nullptr)
 		{
 			if (PropType != 'r' && PropType != 'w' && PropType != 'a')
 				throw PropException("Invalid property type (only 'r', 'w' or 'a' are allowed)");
@@ -94,16 +91,16 @@ namespace colibry {
 
 		ValueType operator=(const ValueType value)
 		{
-			if (_cobj == NULL) throw PropException("No property container");
-			if (_set == NULL) throw PropException("No property setter");
+			if (_cobj == nullptr) throw PropException("No property container");
+			if (_set == nullptr) throw PropException("No property setter");
 			(_cobj->*_set)(value);
 			return value;
 		}
 
 	operator ValueType() const // cast to internal type
 	{
-		if (_cobj == NULL) throw PropException("No property container");
-		if (_get == NULL) throw PropException("No property getter");
+		if (_cobj == nullptr) throw PropException("No property container");
+		if (_get == nullptr) throw PropException("No property getter");
 		return (_cobj->*_get)();
 	}
 private:

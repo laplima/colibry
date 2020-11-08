@@ -3,7 +3,7 @@
 #include "../Property.h"
 
 using namespace std;
-using namespace NCOLib;
+using namespace colibry;
 
 struct Position {
 	int x,y;

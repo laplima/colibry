@@ -18,6 +18,8 @@
 namespace colibry {
 	namespace ishell {
 
+		// ----- helper functions
+
 		Arguments split(const std::string& input)
 		{
 		    std::regex re{"\\s+"};
@@ -47,6 +49,16 @@ namespace colibry {
 			rtrim(s);
 		}
 
+		char* dupstr(const std::string& s)
+		{
+			char* d = new char[std::size(s)+1];
+			std::copy(std::begin(s), std::end(s), d);
+			d[std::size(s)] = '\0';
+			return d;
+		}
+
+		// ----- redaline-related
+
 		inline int quote_detector(char *line, int index)
 		{
 			return (index > 0 && line[index - 1] == '\\' && !quote_detector(line, index - 1));
@@ -63,16 +75,10 @@ namespace colibry {
 			return escaped;
 		}
 
-		char* dupstr(const std::string& s)
-		{
-			char* d = new char[std::size(s)+1];
-			std::copy(std::begin(s), std::end(s), d);
-			d[std::size(s)] = '\0';
-			return d;
-		}
+		// ----- CmdData implementation
 
 		CmdData::CmdData(const Arguments& pars, const std::string& desc)
-			: description_{desc}, args_{pars}
+			: description{desc}, args{pars}
 		{
 		}
 
@@ -96,7 +102,6 @@ namespace colibry {
 			owner_->add_cmd(cmd, CmdData{{},desc});
 			return *this;
 		}
-
 
 	}
 }
@@ -136,7 +141,7 @@ void ISObserver::help()
 
 	for (const auto &c : regorder_)
 		std::cout << std::setw(max) << c << abstab(max) << " : "
-				  << cmap_[c].description_ << std::endl;
+				  << cmap_[c].description << std::endl;
 
 }
 
@@ -144,7 +149,6 @@ void ISObserver::help()
 
 OIShell OIShell::instance_;
 const ishell::Arguments* OIShell::args0_ = nullptr;
-
 
 OIShell::OIShell() : loop_{true}
 {
@@ -168,15 +172,15 @@ void OIShell::observer(ISObserver *obs)
 void OIShell::notify(const ishell::Arguments& args)
 {
 	if (observer_ != nullptr)
-		observer_->dispatch(args);
+		observer_->dispatch(args[0],{args.begin()+1, args.end()});
 }
 
 void OIShell::run(const std::string& prompt)
 {
-	loop_ = true;
+	loop_ = true;	// may be rerun after a stop
 	while (loop_) {
 		std::string cl = readline(prompt);
-		ishell::trim(cl);
+		// ishell::trim(cl);
 		if (cl.empty())
 			continue;
 		auto args = ishell::split(cl);

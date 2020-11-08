@@ -3,9 +3,9 @@
 // (C) LAPLJ
 //
 // Build map:
-//		option : parameter (may be nullptr)
+//		option -> parameter (may be nullptr)
 //
-//	option is stripped of initial '-' or '--'
+// option is stripped of initial '-' or '--'
 //
 // USAGE:
 //
@@ -25,19 +25,18 @@
 namespace colibry {
 
 	class OptionManager {
-	// public:
-	// 	static const int UNKNOWN;
 	public:
 		OptionManager(int argc, char* argv[]);
 		const char* param(const std::string& opt);
-		const char* mandatory() { return m_mandpar; }
-		bool has(const std::string& opt);  // parameter-less option
+		const char* mandatory() const { return mandpar_; }
+		bool has(const std::string& opt) const;    // parameter-less option
 	private:
-		int     m_argc;
-		char**	m_argv;
-		std::map<std::string,const char*> m_optmap; // option => argv[i]
-		const char* m_mandpar;  // mandatory parameter (just one)
+		int argc_;
+		char** argv_;
+		std::map<std::string,const char*> optmap_; // option => argv[i]
+		const char* mandpar_;		// mandatory parameter (just one)
 	};
+
 };
 
 #endif

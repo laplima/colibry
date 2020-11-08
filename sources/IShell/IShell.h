@@ -1,4 +1,10 @@
 //
+//
+//
+//                OBSOLETE! Use OIShell instead.
+//
+//
+//
 // ISHELL - new Interactive Shell
 //
 // (C) 2020 by Luiz Lima Jr.

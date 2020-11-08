@@ -7,31 +7,21 @@
 //
 // #include <colibry/OIShell.h>
 //
-// class UnknownCommand : public std::runtime_error {
-// public:
-//     UnknownCommand(const std::string& s) : std::runtime_error{s} {}
-// };
-//
-// class SyntaxError : public std::runtime_error {
-// public:
-//     SyntaxError(const std::string& w) : std::runtime_error{w} {}
-// };
-//
 // class CommandHandler : public colibry::ISObserver {
 // public:
-//     void dispatch(const colibry::ishell::Arguments& args) override
+//     void dispatch(const std::string& cmd, const colibry::ishell::Arguments& args) override
 //     {
-//         const std::string& cmd = args[0];
-//         const colibry::ishell::Arguments& pars = {args.begin()+1, args.end()};
-//         if (cmd == "exit")
-// 	           exit();       // default exit
-//         else if (cmd == "help")
-// 	           help();       // default help
-//         else if (cmd == "test")
-// 	           test(pars);
-//         else
-// 	           throw UnknownCommand{args[0]};
-//     }
+//         if (is_valid(cmd)) {
+//             if (cmd == "exit")
+// 	               exit();       // default exit
+//             else if (cmd == "help")
+// 	               help();       // default help
+//             else if (cmd == "test")
+// 	               test(pars);
+//             else
+// 	               std::cerr << "invalid command" << std::endl;
+//         }
+//    }
 // protected:
 //     void test(const colibry::ishell::Arguments& pars)
 //     {
@@ -59,6 +49,7 @@
 #include <vector>
 #include <map>
 #include <mutex>
+#include <stdexcept>
 
 namespace colibry {
 
@@ -67,19 +58,34 @@ namespace colibry {
 
 	namespace ishell {
 
+		// IShell types
+
 		using Arguments = std::vector<std::string>;
 
 		struct CmdData {
 			CmdData() {}
 			CmdData(const Arguments& pars, const std::string& desc);
-			std::string description_;		// menu syntax help
-			Arguments args_;				// options for args (after command name)
 
+			std::string description;	// menu syntax help
+			Arguments args;				// options for args (after command name)
 		};
 
 		using CmdMap = std::map<std::string, CmdData>;
 
+		// ---------- Exceptions (for user convenience)
+
+		class UnknownCommand : public std::runtime_error {
+		public:
+			UnknownCommand(const std::string& s) : std::runtime_error{s} {}
+		};
+
+		class SyntaxError : public std::runtime_error {
+		public:
+			SyntaxError(const std::string& w) : std::runtime_error{w} {}
+		};
+
 		// ---------- EasyInit
+
 		class EasyInit {
 		public:
 			EasyInit(ISObserver* owner) : owner_{owner} {}
@@ -97,22 +103,23 @@ namespace colibry {
 
 	// -------------------------------------------------------------------------
 
+	// Client: to be derived from
+
 	class ISObserver {
 	public:
 
-		virtual void dispatch(const ishell::Arguments& args) = 0;
+		virtual void dispatch(const std::string& cmd, const ishell::Arguments& args) = 0;
 
 	public:
 		ISObserver() noexcept;
 		ishell::EasyInit add_cmds() { return ishell::EasyInit{this}; }
-
-		friend class ishell::EasyInit;
-		friend class OIShell;
 	protected:
 		// default commands (may be overriden -- no automatic dispatch, though)
 		virtual void exit();
 		virtual void help();
 	protected:
+		friend class ishell::EasyInit;
+		friend class OIShell;
 		void add_cmd(const std::string& cmd, const ishell::CmdData& cd)
 		{
 			if (cmap_.count(cmd) == 0) {
@@ -122,7 +129,8 @@ namespace colibry {
 		}
 		const ishell::CmdMap& cmdmap() { return cmap_; }
 		const ishell::Arguments* cmdargs(const std::string& cmd) {
-			return &(cmap_.at(cmd).args_); }
+			return &(cmap_.at(cmd).args); }
+		bool is_valid(const std::string& c) const { return cmap_.count(c) > 0; }
 	protected:
 		ishell::CmdMap cmap_;
 		ishell::Arguments regorder_;	// registration order of the commands
