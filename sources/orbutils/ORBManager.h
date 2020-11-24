@@ -35,7 +35,7 @@ namespace colibry {
 
 	class ORBManager {
 	public:
-		static ORBManager* global;		// last created ORBManager
+		static ORBManager* global();		// first created ORBManager
 	public:
 		ORBManager();
 		void init(int argc, char* argv[]);
@@ -74,7 +74,6 @@ namespace colibry {
 		void run() { m_ORB->run(); }
 
 		std::string object_to_string(CORBA::Object_ptr obj);
-
 		CORBA::Object_ptr string_to_object(const std::string& ior);
 
 		template<typename T>
@@ -88,6 +87,7 @@ namespace colibry {
 		CORBA::ORB_var m_ORB = CORBA::ORB::_nil();
 		PortableServer::POA_var m_rootpoa = PortableServer::POA::_nil();
 		PortableServer::POAManager_var m_poamgr;
+		static ORBManager* global_;
 	};
 
 	template<typename T>

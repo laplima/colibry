@@ -1,11 +1,12 @@
 //
 // NameServer wrapper
 //
-// (C) 2018 LAPLJ. All rights reserved.
+// (C) 2018-20 LAPLJ. All rights reserved.
 //
-// NameServer is a singleton.
-// NameServer uses its own static ORB so that to be independent of some other orbs
-// it could use.
+// NameServer needs an ORB to run upon. A new ORB will only be created if
+// argc + argv are provided. Otherwise, an existing provided ORB is used.
+//
+// The name can be in the form of "/nctxt1/nctxt2/name" (dash-separated).
 //
 
 #ifndef __NAMESERVER_H__
@@ -18,40 +19,42 @@
 
 namespace colibry {
 
-    class NameServer {
-    protected:
+	class NameServer {
+	protected:
 
-        static CORBA::ORB_var nsorb_;
-        static bool ownorb_;           // do I own the orb?
-        static std::unique_ptr<NameServer> instance_;
+		CORBA::ORB_var orb_;				// my orb
+		CosNaming::NamingContext_var ns_;	// reference to NS
 
-        CosNaming::NamingContext_var ns_;
+		static NameServer* global_;			// global NS
 
-    protected:
+	protected:
 
-        NameServer();
-        virtual void verifyNamingContexts(const CosNaming::Name& n);
+		virtual void verifyNamingContexts(const CosNaming::Name& n);
+		void init_ns_ref();
 
-    public:
+	public:
 
-    	 // create new ORB, if none provided
-    	static NameServer* Instance(int argc, char* argv[]); // always create own ORB
-        static NameServer* Instance(CORBA::ORB_ptr orb = CORBA::ORB::_nil());
-        static NameServer* Instance(ORBManager& om) { return Instance(om.orb()); }
-        virtual ~NameServer();
+		static NameServer* global();			// first created NS
 
-        // Resolve
-        virtual CORBA::Object_ptr resolve(const std::string& name);
-        template<typename T> T* resolven(const std::string& name)
-        { return T::_narrow(resolve(name)); }
+		NameServer();							// tries to use global ORBManager
+		NameServer(int argc, char* argv[]);		// creates own ORBManager
+		NameServer(ORBManager& om);				// uses this om
+		NameServer(CORBA::ORB_ptr orb);			// uses this orb
+		virtual ~NameServer();
 
-        // Bind
-        virtual void bind(const std::string& name, CORBA::Object_ptr ref);
-        virtual void rebind(const std::string& name, CORBA::Object_ptr ref);
+		// Resolve
+		CORBA::Object_ptr resolve(const std::string& name);
 
-        // Unbind
-        virtual void unbind(const std::string& name);
-    };
+		template<typename T>
+		T* resolve(const std::string& name) { return T::_narrow(resolve(name)); }
+
+		// Bind
+		virtual void bind(const std::string& name, CORBA::Object_ptr ref);
+		virtual void rebind(const std::string& name, CORBA::Object_ptr ref);
+
+		// Unbind
+		virtual void unbind(const std::string& name);
+	};
 
 };
 

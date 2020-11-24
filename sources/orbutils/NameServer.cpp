@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <regex>
+#include <stdexcept>
 
 using namespace std;
 using namespace colibry;
@@ -32,56 +33,67 @@ CosNaming::Name StringToName(const string& name)
 // static members
 //
 
-CORBA::ORB_var NameServer::nsorb_ = CORBA::ORB::_nil();
-bool NameServer::ownorb_ = true;
-unique_ptr<NameServer> NameServer::instance_{nullptr};
+// CORBA::ORB_var NameServer::nsorb_ = CORBA::ORB::_nil();
+// bool NameServer::ownorb_ = true;
+// unique_ptr<NameServer> NameServer::instance_{nullptr};
+
+NameServer* NameServer::global_ = nullptr;
+
+NameServer* NameServer::global()
+{
+	if (global_ == nullptr)
+		throw std::runtime_error{"NameServer: no global BS"};
+	return global_;
+}
 
 //
 // method implementations
 //
-NameServer* NameServer::Instance(int argc, char* argv[])
-{
-	if (!CORBA::is_nil(nsorb_)) {
-		if (ownorb_) {
-			nsorb_->destroy();
-			nsorb_ = CORBA::ORB::_nil();
-		}
-	}
-
-	instance_.reset();
-
-	nsorb_ = CORBA::ORB_init(argc, argv, "NS-ORB");
-	ownorb_ = true;
-
-	if (!instance_)
-		instance_ = unique_ptr<NameServer>{new NameServer};
-	return instance_.get();
-}
-
-NameServer* NameServer::Instance(CORBA::ORB_ptr orb)
-{
-	if (CORBA::is_nil(nsorb_)) {
-		if (CORBA::is_nil(orb))
-			throw runtime_error{"No ORB provided for NS"};
-		nsorb_ = CORBA::ORB::_duplicate(orb);
-		ownorb_ = false;
-	}
-	if (!instance_)
-		instance_ = unique_ptr<NameServer>{new NameServer};
-	return instance_.get();
-}
-
 NameServer::NameServer()
 {
-	ACE_LOG_MSG->set_flags(ACE_Log_Msg::SILENT); // turn off error messages
-	CORBA::Object_ptr ref = nsorb_->resolve_initial_references("NameService");
+	orb_ = CORBA::ORB::_duplicate(ORBManager::global()->orb());
+	init_ns_ref();
+}
+
+NameServer::NameServer(int argc, char* argv[])
+{
+	orb_ = CORBA::ORB_init(argc, argv, "NS-ORB");
+	init_ns_ref();
+}
+
+NameServer::NameServer(CORBA::ORB_ptr orb)
+{
+	if (CORBA::is_nil(orb))
+		throw runtime_error{"NameServer: No ORB provided for NS"};
+
+	orb_ = CORBA::ORB::_duplicate(orb);
+	init_ns_ref();
+}
+
+NameServer::NameServer(ORBManager& om)
+{
+	if (!om.orb_initiated())
+		throw runtime_error{"NameServer: ORBManager not initiated"};
+
+	orb_ = CORBA::ORB::_duplicate(om.orb());
+	init_ns_ref();
+}
+
+void NameServer::init_ns_ref()
+{
+	if (global_ == nullptr) {
+		ACE_LOG_MSG->set_flags(ACE_Log_Msg::SILENT); // turn off error messages
+		global_ = this;
+	}
+
+	CORBA::Object_ptr ref = orb_->resolve_initial_references("NameService");
 	ns_ = CosNaming::NamingContext::_narrow(ref);
 }
 
 NameServer::~NameServer()
 {
-	if (ownorb_ && !is_nil(nsorb_.in()))
-		nsorb_->destroy();
+	// I have a copy: always destroy
+	orb_->destroy();
 }
 
 CORBA::Object_ptr NameServer::resolve(const string& name)

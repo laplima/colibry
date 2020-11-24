@@ -5,17 +5,25 @@
 using namespace std;
 using namespace colibry;
 
-ORBManager* ORBManager::global = nullptr;
+ORBManager* ORBManager::global_ = nullptr;
+ORBManager* ORBManager::global()
+{
+	if (global_ == nullptr)
+		throw runtime_error{"inexistent global ORBManager"};
+	return global_;
+}
 
 ORBManager::ORBManager()
 {
-	global = this;
+	if (global_ == nullptr)
+		global_ = this;
 }
 
 ORBManager::ORBManager(int argc, char* argv[])
 {
 	init(argc,argv);
-	global = this;
+	if (global_ == nullptr)
+		global_ = this;
 }
 
 ORBManager::~ORBManager()
@@ -25,6 +33,8 @@ ORBManager::~ORBManager()
 			m_rootpoa->destroy(true,true);
 		m_ORB->destroy();
 	}
+	if (global_ == this)
+		global_ = nullptr;
 }
 
 void ORBManager::init(int argc, char* argv[])
