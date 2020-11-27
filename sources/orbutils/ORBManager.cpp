@@ -1,64 +1,96 @@
 #include "ORBManager.h"
 #include <fstream>
 #include <stdexcept>
+#include <iostream>
 
 using namespace std;
 using namespace colibry;
 
-ORBManager* ORBManager::global_ = nullptr;
-ORBManager* ORBManager::global()
-{
-	if (global_ == nullptr)
-		throw runtime_error{"inexistent global ORBManager"};
-	return global_;
-}
-
 ORBManager::ORBManager()
 {
-	if (global_ == nullptr)
-		global_ = this;
 }
 
-ORBManager::ORBManager(int argc, char* argv[])
+ORBManager::ORBManager(const std::string& orbname)
 {
-	init(argc,argv);
-	if (global_ == nullptr)
-		global_ = this;
+	init(orbname);
+}
+
+ORBManager::ORBManager(int argc, char* argv[], const string& orbname)
+{
+	init(argc,argv,orbname);
+}
+
+ORBManager::ORBManager(CORBA::ORB_ptr orb) : orbname_{orb->id()}
+{
+	m_ORB = CORBA::ORB::_duplicate(orb);
+}
+
+ORBManager::ORBManager(const ORBManager& om)
+{
+	*this = om;
 }
 
 ORBManager::~ORBManager()
 {
-	if (orb_initiated()) {
+	// std::cout << "ORBM " << orbname_ << " to be destroyed\n";
+	if (initiated()) {
 		if (!CORBA::is_nil(m_rootpoa.in()))
 			m_rootpoa->destroy(true,true);
 		m_ORB->destroy();
 	}
-	if (global_ == this)
-		global_ = nullptr;
+	// std::cout << "ORBM " << orbname_ << " destroyed\n";
 }
 
-void ORBManager::init(int argc, char* argv[])
+ORBManager& ORBManager::operator=(const ORBManager& om)
 {
-	if (!orb_initiated())
-		m_ORB = CORBA::ORB_init(argc,argv,"ORB");
+	if (&om != this) {
+		orbname_ = om.orbname_;
+		m_ORB = CORBA::ORB::_duplicate(om.m_ORB.in());
+		m_rootpoa = PortableServer::POA::_duplicate(om.m_rootpoa.in());
+		m_poamgr = PortableServer::POAManager::_duplicate(m_poamgr.in());
+	}
+	return *this;
 }
 
-bool ORBManager::orb_initiated() const
+ORBManager& ORBManager::operator=(CORBA::ORB_ptr orb)
+{
+	orbname_ = orb->id();
+	m_ORB = CORBA::ORB::_duplicate(orb);
+	m_rootpoa = PortableServer::POA::_nil();
+	m_poamgr = PortableServer::POAManager::_nil();
+	return *this;
+}
+
+void ORBManager::init(int argc, char* argv[], const string& orbname)
+{
+	// always initiate (may return existing ORB if orbname has been
+	// previously initiated and not destroyed)
+	m_ORB = CORBA::ORB_init(argc,argv,orbname.c_str());
+	orbname_ = orbname;
+}
+
+void ORBManager::init(const std::string& orbname)
+{
+	int argc = 1;
+	char *argv[1] = { nullptr };
+	init(argc,argv,orbname);
+}
+
+bool ORBManager::initiated() const
 {
 	return (!CORBA::is_nil(m_ORB.in()));
 }
 
 void ORBManager::check_init()
 {
-	if (!orb_initiated())
+	if (!initiated())
 		throw runtime_error{"ORB was not initialized"};
 }
 
 void ORBManager::activate_rootpoa()
 {
 	check_init();
-	CORBA::Object_ptr ref = m_ORB->resolve_initial_references("RootPOA");
-	m_rootpoa = PortableServer::POA::_narrow(ref);
+	m_rootpoa = bootstrap<PortableServer::POA>("RootPOA");
 	m_poamgr = m_rootpoa->the_POAManager();
 	m_poamgr->activate();
 }
@@ -151,6 +183,6 @@ void ORBManager::save_ior(const std::string& fname, CORBA::Object_ptr obj)
 
 void ORBManager::shutdown()
 {
-	if (orb_initiated())
+	if (initiated())
 		m_ORB->shutdown();
 }

@@ -30,98 +30,98 @@ CosNaming::Name StringToName(const string& name)
 }
 
 //
-// static members
-//
-
-// CORBA::ORB_var NameServer::nsorb_ = CORBA::ORB::_nil();
-// bool NameServer::ownorb_ = true;
-// unique_ptr<NameServer> NameServer::instance_{nullptr};
-
-NameServer* NameServer::global_ = nullptr;
-
-NameServer* NameServer::global()
-{
-	if (global_ == nullptr)
-		throw std::runtime_error{"NameServer: no global BS"};
-	return global_;
-}
-
-//
 // method implementations
 //
+
 NameServer::NameServer()
 {
-	orb_ = CORBA::ORB::_duplicate(ORBManager::global()->orb());
-	init_ns_ref();
-}
-
-NameServer::NameServer(int argc, char* argv[])
-{
-	orb_ = CORBA::ORB_init(argc, argv, "NS-ORB");
-	init_ns_ref();
+	// delayed orb initialization
 }
 
 NameServer::NameServer(CORBA::ORB_ptr orb)
 {
-	if (CORBA::is_nil(orb))
-		throw runtime_error{"NameServer: No ORB provided for NS"};
-
-	orb_ = CORBA::ORB::_duplicate(orb);
+	use_orb(orb);
 	init_ns_ref();
 }
 
 NameServer::NameServer(ORBManager& om)
 {
-	if (!om.orb_initiated())
-		throw runtime_error{"NameServer: ORBManager not initiated"};
-
-	orb_ = CORBA::ORB::_duplicate(om.orb());
+	use_orb(om);
 	init_ns_ref();
+}
+
+void NameServer::use_orb(ORBManager& om)
+{
+	orb_ = CORBA::ORB::_duplicate(om.orb());
+}
+
+void NameServer::use_orb(CORBA::ORB_ptr orb)
+{
+	orb_ = CORBA::ORB::_duplicate(orb);
 }
 
 void NameServer::init_ns_ref()
 {
-	if (global_ == nullptr) {
+	if (CORBA::is_nil(ns_.in())) {
+		verify_orb();
 		ACE_LOG_MSG->set_flags(ACE_Log_Msg::SILENT); // turn off error messages
-		global_ = this;
+		CORBA::Object_ptr ref = orb_->resolve_initial_references("NameService");
+		ns_ = CosNaming::NamingContext::_narrow(ref);
 	}
-
-	CORBA::Object_ptr ref = orb_->resolve_initial_references("NameService");
-	ns_ = CosNaming::NamingContext::_narrow(ref);
 }
 
-NameServer::~NameServer()
+NameServer::~NameServer() noexcept
 {
-	// I have a copy: always destroy
-	orb_->destroy();
+	try {
+		// if tounbind_ is not empty, then ns_ is (or was...) valid
+		for (const auto& name : tounbind_)
+			unbind(name);
+	} catch (...) {
+	}
 }
 
-CORBA::Object_ptr NameServer::resolve(const string& name)
+void NameServer::verify_orb()
 {
+	if (CORBA::is_nil(orb_))
+		throw std::runtime_error{"NameServer: ORB not initiated"};
+}
+
+CORBA::Object_ptr NameServer::raw_resolve(const string& name)
+{
+	init_ns_ref();
 	// does not create naming contexts from name...
 	return ns_->resolve(StringToName(name));
 }
 
-void NameServer::bind(const string& name, CORBA::Object_ptr ref)
+void NameServer::bind(const string& name, CORBA::Object_ptr ref,
+	bool auto_unbind)
 {
+	init_ns_ref();
 	CosNaming::Name n = StringToName(name);
-	verifyNamingContexts(n);	// Create intermediary naming contexts if needed
+	verify_nctxs(n);	// Create intermediary naming contexts if needed
 	ns_->bind(n,ref);			// throw if already bound
+	if (auto_unbind)
+		tounbind_.push_back(name);
 }
 
-void NameServer::rebind(const string& name, CORBA::Object_ptr ref)
+void NameServer::rebind(const string& name, CORBA::Object_ptr ref,
+	bool auto_unbind)
 {
+	init_ns_ref();
 	CosNaming::Name n = StringToName(name);
-	verifyNamingContexts(n);	// Create intermediary naming contexts if needed
+	verify_nctxs(n);	// Create intermediary naming contexts if needed
 	ns_->rebind(n,ref);
+	if (auto_unbind)
+		tounbind_.push_back(name);
 }
 
 void NameServer::unbind(const string& name)
 {
+	init_ns_ref();
 	ns_->unbind(StringToName(name));
 }
 
-void NameServer::verifyNamingContexts(const CosNaming::Name& n)
+void NameServer::verify_nctxs(const CosNaming::Name& n)
 {
 	// create all naming contexts if necessary
 	CosNaming::NamingContext_var nc = CosNaming::NamingContext::_duplicate(ns_);

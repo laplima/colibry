@@ -6,7 +6,7 @@
 //
 //	SERVER
 //	----------
-//	ORBManager om{argc,argv};
+//	ORBManager om{argc,argv}; // default name is "ORB"
 //	om.activate_rootpoa();
 //	OO_i obji;
 //	OO_var obj = om.activate_object<OO>(obji);
@@ -19,8 +19,11 @@
 //	OO_var obj = om.string_to_object<OO>("file://,,,,");
 //
 // Notes:
-// ORBManager om;		non-initialized om: needes init() in order to be used
+// ORBManager om;	// non-initialized om: needes init() in order
 // om.init(argc, argv);
+//
+// ORB name is optional, but if the same name is provided, the
+// same ORB is used (unless it has been previously destroyed).
 //
 
 #ifndef __ORB_MANAGER_H__
@@ -35,18 +38,26 @@ namespace colibry {
 
 	class ORBManager {
 	public:
-		static ORBManager* global();		// first created ORBManager
-	public:
-		ORBManager();
-		void init(int argc, char* argv[]);
-		bool orb_initiated() const;
-
-		ORBManager(int argc, char* argv[]);		// will call init()
+		ORBManager();								// non-initiated
+		ORBManager(const std::string& orbname);		// initiated w/ default args
+		ORBManager(int argc, char* argv[],
+			const std::string& orbname="ORB");		// will call init()
+		ORBManager(CORBA::ORB_ptr orb);
+		ORBManager(const ORBManager& om);
 		virtual ~ORBManager();
 
+		ORBManager& operator=(const ORBManager& om);
+		ORBManager& operator=(CORBA::ORB_ptr orb);
+
+		std::string name() const { return orbname_; }
+
+		void init(int argc, char* argv[], const std::string& orbname="ORB");
+		void init(const std::string& orbname="ORB");    // default args
+		bool initiated() const;
+
 		void activate_rootpoa();
+
 		CORBA::ORB_ptr orb() { return m_ORB.in(); }
-		CORBA::ORB_ptr operator*() { return orb(); }
 		PortableServer::POA_ptr rootpoa() { return m_rootpoa.in(); }
 
 		enum class Policy : char {
@@ -77,6 +88,9 @@ namespace colibry {
 		CORBA::Object_ptr string_to_object(const std::string& ior);
 
 		template<typename T>
+		T* bootstrap(const std::string& service);
+
+		template<typename T>
 		T* string_to_object(const std::string& ior);
 
 		void save_ior(const std::string& fname, CORBA::Object_ptr obj);
@@ -84,11 +98,17 @@ namespace colibry {
 	protected:
 		void check_init();
 	protected:
+		std::string orbname_;
 		CORBA::ORB_var m_ORB = CORBA::ORB::_nil();
 		PortableServer::POA_var m_rootpoa = PortableServer::POA::_nil();
-		PortableServer::POAManager_var m_poamgr;
-		static ORBManager* global_;
+		PortableServer::POAManager_var m_poamgr = PortableServer::POAManager::_nil();
 	};
+
+	template<typename T>
+	T* ORBManager::bootstrap(const std::string& service) {
+		CORBA::Object_ptr ref = m_ORB->resolve_initial_references(service.c_str());
+		return T::_narrow(ref);
+	}
 
 	template<typename T>
 	T* ORBManager::activate_object(PortableServer::ServantBase& servant)
