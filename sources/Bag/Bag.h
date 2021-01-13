@@ -18,11 +18,14 @@
 #define __BAG_H__
 
 #include <vector>
+#include <list>
 #include <iostream>
 #include <stdexcept>
 #include <cinttypes>	// supposed T types
 #include <limits>
 #include <random>
+#include <algorithm>
+#include <cassert>
 
 namespace colibry {
 
@@ -32,25 +35,25 @@ namespace colibry {
 	public:
 
 		Bag();				// use min and max values for type T in limits
-		Bag(const T lo);	// specifies only lower bound value
-		Bag(const T lo, const T up);
+		Bag(T lo);	// specifies only lower bound value
+		Bag(T lo, T up);
 		Bag(const Bag<T>& bg);
 		Bag<T>& operator=(const Bag<T>& bg);
 
 		T get();
-		void put_back(const T i);
+		void put_back(T i);
 
 		bool empty() const;
 		void randomize(bool r=true);
 
-		T lower() const { return m_range.lower; }
-		T upper() const { return m_range.upper; }
+		T lower() const { return range_.lower; }
+		T upper() const { return range_.upper; }
 
 		friend std::ostream& operator<<(std::ostream& os, const Bag<T>& b)
 		{
 			// Format: [l,u]s[l0,u0][l1,u1]...[l(s-1),u(s-1)]
-			os << b.m_range << b.m_available.size();
-			for (auto& inter : b.m_available)
+			os << b.range_ << b.available_.size();
+			for (auto& inter : b.available_)
 				os << inter;
 			return os;
 		}
@@ -58,12 +61,12 @@ namespace colibry {
 		friend std::istream& operator>>(std::istream& is, Bag<T>& b)
 		{
 			try {
-				decltype(m_available.size()) s;
-				if (!(is >> b.m_range >> s)) throw std::runtime_error("range");
+				decltype(available_.size()) s;
+				if (!(is >> b.range_ >> s)) throw std::runtime_error("range");
 				Range r;
-				b.m_available.clear();
+				b.available_.clear();
 				for (decltype(s) i = 0; i<s && is>>r; ++i)
-					b.m_available.push_back(r);
+					b.available_.push_back(r);
 			} catch (const std::runtime_error& e) {
 				is.clear(std::ios::failbit);
 			}
@@ -72,12 +75,13 @@ namespace colibry {
 
 	protected:
 
-		struct Range {
-			Range() {}
-			Range(const T lo, const T up) : lower{lo}, upper{up} {}
-			bool empty() const { return (lower > upper); }
+		struct Range {			// continuous range [lo-up]
 			T lower;
 			T upper;
+			Range() {}
+			Range(T lo, T up) : lower{lo}, upper{up} {}
+			bool empty() const { return (lower > upper); }
+			bool contains(T i) const { return (i >= lower && i <= upper); }
 			friend std::ostream& operator<<(std::ostream& os, const Range& r) {
 				return (os << "[" << r.lower << "," << r.upper << "]");
 			}
@@ -92,15 +96,22 @@ namespace colibry {
 				}
 				return is;
 			}
-
 		};
 
 	protected:
 
-		Range m_range;					// range to take items from
-		std::vector<Range> m_available;	// ranges of available items
-		bool m_randomize;
+		Range range_;					// range to take items from
+		std::list<Range> available_;	// ranges of available items
+		bool randomize_;
+
+		// random static
+		static std::random_device rd;
+		static std::default_random_engine gen;
 	};
+
+	// random static
+	template<typename T> std::random_device Bag<T>::rd;
+	template<typename T> std::default_random_engine Bag<T>::gen{rd()};
 
 	//
 	// Constructors
@@ -108,27 +119,28 @@ namespace colibry {
 
 	template<typename T>
 	Bag<T>::Bag()
-		: m_range{std::numeric_limits<T>::min(), std::numeric_limits<T>::max()},
-		m_randomize{false}
+		: range_{std::numeric_limits<T>::min(), std::numeric_limits<T>::max()},
+		randomize_{false}
 	{
-		m_available.push_back(m_range);
+		available_.emplace_back(range_);
 	}
 
 	template<typename T>
-	Bag<T>::Bag(const T lo)
-		: m_range{lo, std::numeric_limits<T>::max()},
-		m_randomize{false}
+	Bag<T>::Bag(T lo)
+		: range_{lo, std::numeric_limits<T>::max()},
+		randomize_{false}
 	{
-		m_available.push_back(m_range);
+		available_.emplace_back(range_);
 	}
 
 	template<typename T>
-	Bag<T>::Bag(const T lo, const T up)
-		: m_range{lo, up},
-		m_randomize{false}
+	Bag<T>::Bag(T lo, T up)
+		: range_{lo, up},
+		randomize_{false}
 	{
-		if (m_range.empty()) throw std::out_of_range{"empty bag"};
-		m_available.push_back(m_range);
+		if (range_.empty())
+			throw std::out_of_range{"empty bag"};
+		available_.emplace_back(range_);
 	}
 
 	//
@@ -149,9 +161,9 @@ namespace colibry {
 	Bag<T>& Bag<T>::operator=(const Bag<T>& bg)
 	{
 		if (this != &bg) {
-			m_range = bg.m_range;
-			m_available = bg.m_available;
-			m_randomize = bg.m_randomize;
+			range_ = bg.range_;
+			available_ = bg.available_;
+			randomize_ = bg.randomize_;
 		}
 		return *this;
 	}
@@ -167,33 +179,29 @@ namespace colibry {
 			throw std::underflow_error{"no more items"};
 
 		T id;
-		auto it = m_available.begin();
+		auto it = available_.begin();
 
-		if (!m_randomize) {
+		if (!randomize_) {
 			// sequential
 			id = it->lower;
-			it->lower++;
+			++(it->lower);
 			if (it->empty())
-				m_available.erase(m_available.begin());		// remove range from availables
+				available_.pop_front();
 		} else {
 			// random
-			// random available range
-			std::default_random_engine gen{(std::random_device())()};
-			std::uniform_int_distribution<decltype(m_available.size())> ud(0,m_available.size()-1);
-			it += ud(gen);
+			std::uniform_int_distribution<decltype(available_.size())> ud(0,available_.size()-1);
+			it = std::next(it,ud(gen));
 
 			// random value in the Range
 			std::uniform_int_distribution<T> ut(it->lower,it->upper);
 			id = ut(gen);
-			// split Range
+			// split it range
 			Range previnter{it->lower,id-1};	// before it
 			it->lower = id+1;
-			if (!previnter.empty()) {
-				it = m_available.insert(it,previnter);
-				++it;
-			}
+			if (!previnter.empty())
+				available_.insert(it,previnter); // insert before it
 			if (it->empty())
-				m_available.erase(it);
+				available_.erase(it);
 		}
 		return id;
 	}
@@ -219,53 +227,50 @@ namespace colibry {
 	template<typename T>
 	void Bag<T>::put_back(const T i)
 	{
-		if (i > m_range.upper || i < m_range.lower) {
-			// out of range
+		if (!range_.contains(i))
 			throw std::out_of_range{"put_back(): out of range"};
-		} else if (empty()) {
-			// bag is empty
-			m_available.push_back(Range{i,i});
-		} else {
+
+		if (empty())
+			available_.push_back(Range{i,i});
+		else {
 			// Find position (first range with lower>i)
-			auto it = m_available.begin();
-			while (it->lower<=i && it!=m_available.end())
-				++it;
-			if (it == m_available.begin()) {
-				// before first range
+			auto it = std::find_if(std::begin(available_), std::end(available_), [i](const Range& r) {
+				return (r.lower > i);
+			});
+			// cases
+			if (it == std::begin(available_)) {
+				// before the first range
 				if (it->lower == i+1)
 					--(it->lower);
 				else
-					m_available.insert(it, Range{i,i});	// at the beginning
-			} else if (it == m_available.end()) {
-				// after last
-				--it;
-				if (it->upper >= i)
+					available_.insert(it, Range{i,i});	// at the beginning
+			} else if (it == std::end(available_)) {
+				// after the last range
+				if (available_.back().upper >= i)
 					throw std::invalid_argument{"put_back(): already in bag"};
-				else if (it->upper == i-1)
-					++(it->upper);
+				else if (available_.back().upper == i-1)
+					++(available_.back().upper);
 				else
-					m_available.push_back(Range{i,i}); 	// at the end
+					available_.push_back(Range{i,i}); 	// at the end
 			} else {
 				// in the middle
-				auto ant = it-1;
+				auto ant = std::prev(it);
+				auto try_merge = [this](typename std::list<Range>::iterator a, typename std::list<Range>::iterator i) {
+					if (a->upper == i->lower - 1) {
+						a->upper = i->upper;
+						this->available_.erase(i);
+					}
+				};
 				if (ant->upper >= i)
 					throw std::invalid_argument{"put_back(): already in bag"};
 				else if (it->lower == i+1) {
 					--(it->lower);
-					if (ant->upper == it->lower - 1) {
-						// concatenate ranges
-						it->lower = ant->lower;
-						m_available.erase(ant);
-					}
+					try_merge(ant,it);
 				} else if (ant->upper == i-1) {
-					++(it->upper);
-					if (ant->upper == it->lower - 1) {
-						// concatenate ranges
-						it->lower = ant->lower;
-						m_available.erase(ant);
-					}
+					++(ant->upper);
+					try_merge(ant,it);
 				} else
-					m_available.insert(it,Range{i,i});
+					available_.insert(it,Range{i,i});
 			}
 		}
 	}
@@ -277,13 +282,13 @@ namespace colibry {
 	template<typename T>
 	bool Bag<T>::empty() const
 	{
-		return (bool)(m_available.empty());
+		return (bool)(available_.empty());
 	}
 
 	template<typename T>
 	void Bag<T>::randomize(bool r)
 	{
-		m_randomize = r;
+		randomize_ = r;
 	}
 
 };
