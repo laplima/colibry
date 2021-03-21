@@ -43,6 +43,8 @@ namespace colibry {
 		T get();
 		void put_back(T i);
 
+        void reset();   // restore original range
+
 		bool empty() const;
 		void randomize(bool r=true);
 
@@ -167,6 +169,13 @@ namespace colibry {
 		}
 		return *this;
 	}
+
+    template<typename T>
+    void Bag<T>::reset()
+    {
+        available_.clear();
+        available_.push_back(range_);
+    }
 
 	//
 	// get
