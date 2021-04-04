@@ -13,10 +13,18 @@
 //	cout << om.object_to_string(obj.in()) << endl;
 //	om.run();
 //
+//	// (with <ENTER> to quit, instead of `om.run()`)
+//
+//  thread orbth{[&om]() { om.run(); }};
+//  cout << "Press ENTER to quit." << endl;
+//  cin.get();
+//  om.shutdown();
+//  orbth.join();
+//
 //	CLIENT
 //	----------
 //	ORBManager om{argc,argv};
-//	OO_var obj = om.string_to_object<OO>("file://,,,,");
+//	OO_var obj = om.string_to_object<OO>("file://....");
 //
 // Notes:
 // ORBManager om;	// non-initialized om: needes init() in order
