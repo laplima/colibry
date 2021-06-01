@@ -6,10 +6,6 @@
 using namespace std;
 using namespace colibry;
 
-ORBManager::ORBManager()
-{
-}
-
 ORBManager::ORBManager(const std::string& orbname)
 {
 	init(orbname);
@@ -45,9 +41,15 @@ ORBManager& ORBManager::operator=(const ORBManager& om)
 {
 	if (&om != this) {
 		orbname_ = om.orbname_;
-		m_ORB = CORBA::ORB::_duplicate(om.m_ORB.in());
-		m_rootpoa = PortableServer::POA::_duplicate(om.m_rootpoa.in());
-		m_poamgr = PortableServer::POAManager::_duplicate(m_poamgr.in());
+		m_ORB = CORBA::ORB::_nil();
+		m_rootpoa = PortableServer::POA::_nil();
+		m_poamgr = PortableServer::POAManager::_nil();
+		if (!CORBA::is_nil(om.m_ORB.in()))
+			m_ORB = CORBA::ORB::_duplicate(om.m_ORB.in());
+		if (!CORBA::is_nil(om.m_rootpoa.in()))
+			m_rootpoa = PortableServer::POA::_duplicate(om.m_rootpoa.in());
+		if (!CORBA::is_nil(om.m_poamgr.in()))
+			m_poamgr = PortableServer::POAManager::_duplicate(om.m_poamgr.in());
 	}
 	return *this;
 }
@@ -55,7 +57,8 @@ ORBManager& ORBManager::operator=(const ORBManager& om)
 ORBManager& ORBManager::operator=(CORBA::ORB_ptr orb)
 {
 	orbname_ = orb->id();
-	m_ORB = CORBA::ORB::_duplicate(orb);
+
+	m_ORB = (!CORBA::is_nil(orb)) ? CORBA::ORB::_duplicate(orb) : CORBA::ORB::_nil();
 	m_rootpoa = PortableServer::POA::_nil();
 	m_poamgr = PortableServer::POAManager::_nil();
 	return *this;
@@ -183,6 +186,8 @@ void ORBManager::save_ior(const std::string& fname, CORBA::Object_ptr obj)
 
 void ORBManager::shutdown()
 {
-	if (initiated())
+	if (initiated() && !shutdown_) {
+		shutdown_ = true;
 		m_ORB->shutdown();
+	}
 }

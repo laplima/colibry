@@ -46,7 +46,7 @@ namespace colibry {
 
 	class ORBManager {
 	public:
-		ORBManager();								// non-initiated
+		ORBManager() = default;						// non-initiated
 		ORBManager(const std::string& orbname);		// initiated w/ default args
 		ORBManager(int argc, char* argv[],
 			const std::string& orbname="ORB");		// will call init()
@@ -103,7 +103,12 @@ namespace colibry {
 
 		void save_ior(const std::string& fname, CORBA::Object_ptr obj);
 		void shutdown();
+		bool has_shutdown() const { return shutdown_; }
+
+		bool work_pending() const { return m_ORB->work_pending(); }
+		void perform_work() { m_ORB->perform_work(); }
 	protected:
+		bool shutdown_ = false;
 		void check_init();
 	protected:
 		std::string orbname_;
