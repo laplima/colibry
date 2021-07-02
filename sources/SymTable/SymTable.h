@@ -60,7 +60,6 @@ namespace colibry {
 	public:
 
 		SymTable();                        // Constructor
-		virtual ~SymTable();               // Destructor
 
 		// Returns the index of an existing symbol, or allocate a new index
 		// (and memory) if symbol is not yet in the lookup table.
@@ -78,14 +77,14 @@ namespace colibry {
 		void Clear();
 
 		// Check whether symbol pointed by given index exits.
-		bool IsValid(const std::uint32_t inSigNo) const;
+		[[nodiscard]] bool IsValid(const std::uint32_t inSigNo) const;
 
 		// Mark (or unmark) existing symbol. Throws exception,
 		// if inSigNo is not valid.
 		void Mark(const std::uint32_t inSigNo, bool inMarked=true);
 
 		// Check whether symbol is marked.
-		bool IsMarked(const std::uint32_t signo) const;
+		[[nodiscard]] bool IsMarked(const std::uint32_t signo) const;
 
 		// Get table size
 		std::uint32_t Size();
@@ -97,8 +96,8 @@ namespace colibry {
 		struct TItem {
 			std::string symbol;
 			bool marked;
-			TItem() {}
-			TItem(const std::string &str, const bool mrk) : symbol{str}, marked{mrk} {}
+			TItem() = default;
+			TItem(std::string str, const bool mrk) : symbol{std::move(str)}, marked{mrk} {}
 		};
 
 		std::vector<std::unique_ptr<TItem>> iot_;

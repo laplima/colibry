@@ -32,7 +32,7 @@ std::string colibry::SEPARATOR(unsigned short t)
 
 unsigned short colibry::term_cols()
 {
-	struct winsize ws;
+	struct winsize ws{};
 	if (ioctl(1,TIOCGWINSZ,&ws) < 0)
 		return 0;
 	return ws.ws_col;
@@ -40,7 +40,7 @@ unsigned short colibry::term_cols()
 
 unsigned short colibry::term_lines()
 {
-	struct winsize ws;
+	struct winsize ws{};
 	if (ioctl(1,TIOCGWINSZ,&ws) < 0)
 		return 0;
 	return ws.ws_row;

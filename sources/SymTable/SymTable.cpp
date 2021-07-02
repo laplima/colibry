@@ -21,11 +21,6 @@ SymTable::SymTable() : size_{0}
 	// iot_.reserve(resource_allocation);		// Reserve space for growth
 }
 
-SymTable::~SymTable()
-{
-	Clear();
-}
-
 // ----- LookUp -------------------------------------------------------
 // Return index of the string in the SymTable. Create new, if necessary.
 

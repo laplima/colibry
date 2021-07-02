@@ -1,0 +1,6 @@
+CompileFlags:
+    Add: [-xc++,-Wno-unused-variable,-Wno-infinite-recursion,-Werror=implicit-function-declaration,-Wshadow,-Wno-shadow-field-in-constructor-modified,-Wno-shadow-ivar,-Wuninitialized,-Wunused-label,-Wunused-lambda-capture]
+Diagnostics:
+    ClangTidy:
+        Add: [cppcoreguidelines-*,modernize-*]
+        Remove: [modernize-use-trailing-return-type,cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,llvmlibc-*]

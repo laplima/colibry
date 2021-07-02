@@ -33,11 +33,6 @@ CosNaming::Name StringToName(const string& name)
 // method implementations
 //
 
-NameServer::NameServer()
-{
-	// delayed orb initialization
-}
-
 NameServer::NameServer(CORBA::ORB_ptr orb)
 {
 	use_orb(orb);

@@ -6,4 +6,6 @@ lib
 a.out
 *.a
 *.sublime-workspace
+.cache
+compile_commands.json
 

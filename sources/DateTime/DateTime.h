@@ -10,12 +10,12 @@
 //  DD/MM/YYYY (WDY) HH:MM:SS
 //
 
-#ifndef __DATETIME_H__
-#define __DATETIME_H__
+#ifndef DATETIME_H
+#define DATETIME_H
 
 #include <string>
 #include <iostream>
-#include <time.h>
+#include <ctime>
 
 namespace colibry {
 
@@ -29,6 +29,7 @@ namespace colibry {
 		DateTime(const time_t& time);
 		DateTime(const DateTime& dt);
 		DateTime(const std::string& fmt);                // see DTFORMAT
+		DateTime(DateTime&&) = default;
 		virtual ~DateTime();
 
 		// Modifiers
@@ -48,6 +49,7 @@ namespace colibry {
 		DateTime& operator=(const struct tm& tm_struct);
 		DateTime& operator=(const time_t& timep);
 		DateTime& operator=(const std::string& fdate);   // see DTFORMAT
+		DateTime& operator=(DateTime&& dt) = default;
 		DateTime& operator+=(const unsigned short ndays);
 		DateTime operator+(const unsigned short ndays) const;
 		time_t operator-(const DateTime& dt);
@@ -73,13 +75,13 @@ namespace colibry {
 
 		// Selectors
 
-		int day() const     { return m_tm.tm_mday; }
-		int month() const   { return m_tm.tm_mon+1; }
-		int year() const    { return m_tm.tm_year+1900; }
-		int hour() const    { return m_tm.tm_hour; }
-		int min() const     { return m_tm.tm_min; }
-		int sec() const     { return m_tm.tm_sec; }
-		int weekday() const { return m_tm.tm_wday; }
+		[[nodiscard]] int day() const     { return m_tm.tm_mday; }
+		[[nodiscard]] int month() const   { return m_tm.tm_mon+1; }
+		[[nodiscard]] int year() const    { return m_tm.tm_year+1900; }
+		[[nodiscard]] int hour() const    { return m_tm.tm_hour; }
+		[[nodiscard]] int min() const     { return m_tm.tm_min; }
+		[[nodiscard]] int sec() const     { return m_tm.tm_sec; }
+		[[nodiscard]] int weekday() const { return m_tm.tm_wday; }
 
 		// Stream output
 		// DAY DD/MM/YYYY HH:MM:SS

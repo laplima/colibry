@@ -15,9 +15,11 @@ namespace colibry {
 	unsigned short term_cols();
 	unsigned short term_lines();
 
+	constexpr unsigned short maxcursor = 1000;
+
 	// special escape sequences
-	std::string cursor_back(unsigned short col=1000);
-	std::string cursor_up(unsigned short lines=1000);
+	std::string cursor_back(unsigned short col=maxcursor);
+	std::string cursor_up(unsigned short lines=maxcursor);
 	std::string erase_end_of_line();
 
 	std::string set_color(unsigned char tc, bool bold=false);	// 0<=tc<=7

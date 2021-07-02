@@ -14,8 +14,8 @@
 //              logic_error::out_of_range => item doesn't belong to the bag
 //
 
-#ifndef __BAG_H__
-#define __BAG_H__
+#ifndef BAG_H
+#define BAG_H
 
 #include <vector>
 #include <list>
@@ -35,17 +35,21 @@ namespace colibry {
 	public:
 
 		Bag();				// use min and max values for type T in limits
-		Bag(T lo);	// specifies only lower bound value
+		Bag(T lo);			// specifies only lower bound value
 		Bag(T lo, T up);
 		Bag(const Bag<T>& bg);
+		Bag(Bag<T>&& bg) = default;		// move constructor
+		virtual ~Bag() = default;
+
 		Bag<T>& operator=(const Bag<T>& bg);
+		Bag<T>& operator=(Bag<T>&&) = default;
 
 		T get();
 		void put_back(T i);
 
         void reset();   // restore original range
 
-		bool empty() const;
+		[[nodiscard]] bool empty() const;
 		void randomize(bool r=true);
 
 		T lower() const { return range_.lower; }
@@ -80,16 +84,16 @@ namespace colibry {
 		struct Range {			// continuous range [lo-up]
 			T lower;
 			T upper;
-			Range() {}
+			Range() = default;
 			Range(T lo, T up) : lower{lo}, upper{up} {}
-			bool empty() const { return (lower > upper); }
+			[[nodiscard]] bool empty() const { return (lower > upper); }
 			bool contains(T i) const { return (i >= lower && i <= upper); }
 			friend std::ostream& operator<<(std::ostream& os, const Range& r) {
 				return (os << "[" << r.lower << "," << r.upper << "]");
 			}
 			friend std::istream& operator>>(std::istream& is, Range& r) {
 				try {
-					char c;
+					char c = 0;
 					if (!(is >> c) || c != '[') throw std::runtime_error{"["};
 					if (!(is >> r.lower >> c) || c != ',') throw std::runtime_error{","};
 					if (!(is >> r.upper >> c) || c != ']') throw std::runtime_error{"["};
@@ -104,7 +108,7 @@ namespace colibry {
 
 		Range range_;					// range to take items from
 		std::list<Range> available_;	// ranges of available items
-		bool randomize_;
+		bool randomize_ = false;
 
 		// random static
 		static std::random_device rd;
@@ -121,24 +125,21 @@ namespace colibry {
 
 	template<typename T>
 	Bag<T>::Bag()
-		: range_{std::numeric_limits<T>::min(), std::numeric_limits<T>::max()},
-		randomize_{false}
+		: range_{std::numeric_limits<T>::min(), std::numeric_limits<T>::max()}
 	{
 		available_.emplace_back(range_);
 	}
 
 	template<typename T>
 	Bag<T>::Bag(T lo)
-		: range_{lo, std::numeric_limits<T>::max()},
-		randomize_{false}
+		: range_{lo, std::numeric_limits<T>::max()}
 	{
 		available_.emplace_back(range_);
 	}
 
 	template<typename T>
 	Bag<T>::Bag(T lo, T up)
-		: range_{lo, up},
-		randomize_{false}
+		: range_{lo, up}
 	{
 		if (range_.empty())
 			throw std::out_of_range{"empty bag"};
