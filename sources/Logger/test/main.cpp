@@ -8,9 +8,9 @@ using namespace colibry;
 
 int main(int argc, char* argv[])
 {
-    SET_REPORTING_LEVEL(Logger::DEBUG0);
-    LOG(Logger::ERROR) << "Erro!";
-    LOG(Logger::INFO) << "Info " << 123;
+    SET_REPORTING_LEVEL(DEBUG0);
+    LOG(ERROR) << "Erro!";
+    LOG(INFO) << "Info " << 123;
     
     return 0;
 }

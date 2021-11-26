@@ -1,6 +1,6 @@
 #include "Logger.h"
 #include <string>
-#include <DateTime.h>
+#include <colibry/DateTime.h>
 
 using namespace std;
 using namespace colibry;
@@ -67,3 +67,4 @@ Logger::~Logger()
     ostream* out = Stream(m_currlevel);
     (*out) << m_ss.str() << endl;
 }
+

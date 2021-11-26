@@ -1,6 +1,6 @@
 //
 //
-//          DEPRECATED!! USE IShell for new projects
+//          DEPRECATED!! USE OIShell for new projects
 //
 //
 // InteractiveShell
