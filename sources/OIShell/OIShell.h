@@ -70,7 +70,7 @@ namespace colibry {
 		using CmdMethod = std::function<void(const colibry::ishell::Arguments&)>;
 
 		// is there another way of doing this without using macros??
-		#define SF(fn) [this](const Arguments& a) { this->fn(a); }
+		#define SF(fn) [this](const colibry::ishell::Arguments& a) { this->fn(a); }
 
 		struct CmdData {
 			CmdData() {}
