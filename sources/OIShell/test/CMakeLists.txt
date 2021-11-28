@@ -6,7 +6,7 @@ set(sources
 	../OIShell.cpp
 	main.cpp)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_BUILD_TYPE Release)
 
 set(libs readline)
@@ -18,7 +18,7 @@ foreach(lib ${libs})
 	set(mylibs ${mylibs} ${tlib})
 endforeach(lib)
 
-include_directories(".." /opt/local/include)
+include_directories(".." /opt/local/include /usr/include)
 
 # add_compile_options()
 

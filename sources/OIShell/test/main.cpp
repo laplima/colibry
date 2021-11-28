@@ -1,5 +1,7 @@
 #include <iostream>
 #include <string>
+// #include <readline/rltypedefs.h>
+// #include <redline/readline.h>
 #include <functional>
 #include "../OIShell.h"
 
@@ -10,24 +12,12 @@ using colibry::ishell::Arguments;
 
 class CommandHandler : public colibry::ISObserver {
 public:
-
-	void dispatch(const string& cmd, const Arguments& args) override
+	CommandHandler()
 	{
-		if (!is_valid(cmd)) {
-			std::cerr << "Unknown command" << endl;
-			return;
-		}
-
-		if (cmd == "exit")
-			exit();
-		else if (cmd == "help")
-			help();
-		else if (cmd == "test")
-			test(args);
+		add_cmds()
+			("test", {"one", "two"}, SF(test), "test one or two");
 	}
-
-protected:
-
+public:
 	void test(const colibry::ishell::Arguments& pars) {
 		cout << "test" << endl;
 		bool first = true;
@@ -49,12 +39,6 @@ int main(int argc, char* argv[])
 	// using namespace std::placeholders; // _1, _2, ...
 	// auto f = std::bind(cmd1,_1,_2);
 
-	auto& ish = colibry::OIShell::instance();
 	CommandHandler ch;
-	ch.add_cmds()
-		("help", "list commands")
-		("exit", "exits the program")
-		("test", {"one", "two"}, "test one or two");
-
-	ish.run("> ");
+	colibry::OIShell::instance().run("> ");
 }

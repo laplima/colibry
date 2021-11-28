@@ -77,8 +77,10 @@ namespace colibry {
 
 		// ----- CmdData implementation
 
-		CmdData::CmdData(const Arguments& pars, const std::string& desc)
-			: description{desc}, args{pars}
+		CmdData::CmdData(const Arguments& a,
+			const colibry::ishell::CmdMethod& f,
+			const std::string& desc)
+			: args{a}, fn{f}, description{desc}
 		{
 		}
 
@@ -90,16 +92,18 @@ namespace colibry {
 
 		EasyInit& EasyInit::operator()(const std::string& cmd,
 				const ishell::Arguments& args,
+				const ishell::CmdMethod& f,
 				const std::string& desc)
 		{
-			owner_->add_cmd(cmd, CmdData{args,desc});
+			owner_->add_cmd(cmd, CmdData{args,f,desc});
 			return *this;
 		}
 
 		EasyInit& EasyInit::operator()(const std::string& cmd,
+				const ishell::CmdMethod& f,
 				const std::string& desc)
 		{
-			owner_->add_cmd(cmd, CmdData{{},desc});
+			owner_->add_cmd(cmd, CmdData{{},f,desc});
 			return *this;
 		}
 
@@ -112,16 +116,28 @@ using namespace colibry;
 
 ISObserver::ISObserver() noexcept
 {
-	OIShell::instance().observer(this);
+	OIShell::instance().observer(this);	// register this observer
+	// default commands
+	add_cmds()
+		("help", [this](const ishell::Arguments& a) { this->help(a); }, "lists all commands")
+		("exit", [this](const ishell::Arguments& a) { this->exit(a); }, "exits program");
 }
 
-void ISObserver::exit()
+void ISObserver::dispatch(const std::string& cmd, const ishell::Arguments& args)
+{
+	if (!is_valid(cmd))
+		throw ishell::UnknownCommand{cmd};
+
+	cmap_[cmd].fn(args);
+}
+
+void ISObserver::exit(const ishell::Arguments&)
 {
 	// default exit
 	OIShell::instance().stop();
 }
 
-void ISObserver::help()
+void ISObserver::help(const ishell::Arguments&)
 {
 	// Find max command size
 	unsigned short max{0};
@@ -158,10 +174,6 @@ OIShell::OIShell() : loop_{true}
 	static char space[2] = " ";
 	rl_completer_word_break_characters = space;
 	rl_char_is_quoted_p = &ishell::quote_detector;
-}
-
-OIShell::~OIShell()
-{
 }
 
 void OIShell::observer(ISObserver *obs)

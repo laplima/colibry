@@ -7,8 +7,32 @@
 //
 // #include <colibry/OIShell.h>
 //
+// // Create command observer object
+//
 // class CommandHandler : public colibry::ISObserver {
 // public:
+//     void test(const colibry::ishell::Arguments& pars)
+//     {
+//           // implement command
+//     }
+// };
+//
+// int main(int argc, char* argv[])
+// {
+//     auto& ish = colibry::OIShell::instance();
+//     CommandHandler ch;
+//     ch.add_cmds()
+//         ("test", { "one", "two"}, SF(test), "test command");
+//
+//     // help and exit are added by default
+//
+//     ish.run("> ");
+// }
+//
+// -----------------------------------------------------------------------------
+//
+// If a specific cmd dispatch behavior is needed, dispatch can be overriden:
+//
 //     void dispatch(const std::string& cmd, const colibry::ishell::Arguments& args) override
 //     {
 //         if (is_valid(cmd)) {
@@ -22,25 +46,6 @@
 // 	               std::cerr << "invalid command" << std::endl;
 //         }
 //    }
-// protected:
-//     void test(const colibry::ishell::Arguments& pars)
-//     {
-//           // implement command
-//     }
-// };
-//
-// int main(int argc, char* argv[])
-// {
-//     auto& ish = colibry::OIShell::instance();
-//     CommandHandler ch;
-//     ch.add_cmds()
-//         ("test", { "one", "two"}, "test command")
-//         ("help", "list commands")      // no parms
-// 	       ("exit", "exits the program"); // idem
-//
-//     ish.run("> ");
-// }
-//
 
 #ifndef __OISHELL_H__
 #define __OISHELL_H__
@@ -50,6 +55,7 @@
 #include <map>
 #include <mutex>
 #include <stdexcept>
+#include <functional>
 
 namespace colibry {
 
@@ -61,13 +67,18 @@ namespace colibry {
 		// IShell types
 
 		using Arguments = std::vector<std::string>;
+		using CmdMethod = std::function<void(const colibry::ishell::Arguments&)>;
+
+		// is there another way of doing this without using macros??
+		#define SF(fn) [this](const Arguments& a) { this->fn(a); }
 
 		struct CmdData {
 			CmdData() {}
-			CmdData(const Arguments& pars, const std::string& desc);
+			CmdData(const Arguments& a, const CmdMethod& f, const std::string& desc);
 
-			std::string description;	// menu syntax help
 			Arguments args;				// options for args (after command name)
+			CmdMethod fn;
+			std::string description;	// menu syntax help
 		};
 
 		using CmdMap = std::map<std::string, CmdData>;
@@ -92,8 +103,10 @@ namespace colibry {
 			EasyInit& operator()(const std::string& cmd, const CmdData& c);
 			EasyInit& operator()(const std::string& cmd,
 				const ishell::Arguments& args,
+				const ishell::CmdMethod& f,
 				const std::string& description);
 			EasyInit& operator()(const std::string& cmd,
+				const ishell::CmdMethod& f,
 				const std::string& description);	// no params
 		private:
 			ISObserver* owner_;
@@ -108,15 +121,15 @@ namespace colibry {
 	class ISObserver {
 	public:
 
-		virtual void dispatch(const std::string& cmd, const ishell::Arguments& args) = 0;
+		virtual void dispatch(const std::string& cmd, const ishell::Arguments& args);
 
 	public:
 		ISObserver() noexcept;
 		ishell::EasyInit add_cmds() { return ishell::EasyInit{this}; }
 	protected:
 		// default commands (may be overriden -- no automatic dispatch, though)
-		virtual void exit();
-		virtual void help();
+		virtual void exit(const ishell::Arguments&);
+		virtual void help(const ishell::Arguments&);
 	protected:
 		friend class ishell::EasyInit;
 		friend class OIShell;
@@ -153,7 +166,6 @@ namespace colibry {
 		static const ishell::Arguments* args0_;	// current cmd args
 	private:
 		OIShell();
-		~OIShell();
 		OIShell(const OIShell&) = delete;
 		OIShell& operator=(const OIShell&) = delete;
 		void notify(const ishell::Arguments& args);
