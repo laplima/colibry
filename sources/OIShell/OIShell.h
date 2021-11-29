@@ -1,32 +1,34 @@
 //
 // OIShell: interactive shell using the Observer Design Pattern
-// (C) 2020- by LAPLJ. All rights reserved.
+// (C) 2020-21 by LAPLJ. All rights reserved.
 //
 // USAGE
 // -----------------------------------------------------------------------------
 //
 // #include <colibry/OIShell.h>
 //
-// // Create command observer object
+// // Create command observer class
 //
 // class CommandHandler : public colibry::ISObserver {
 // public:
+//     CommandHandler()
+//     {
+//		    // help and exit are added by default
+//			add_cmds()
+//          	("test", { "one", "two"}, MWRAP(test), "test command");
+//     }
+// protected:
 //     void test(const colibry::ishell::Arguments& pars)
 //     {
 //           // implement command
+//			 set_prompt(args[0]);
 //     }
 // };
 //
 // int main(int argc, char* argv[])
 // {
-//     auto& ish = colibry::OIShell::instance();
 //     CommandHandler ch;
-//     ch.add_cmds()
-//         ("test", { "one", "two"}, MWRAP(test), "test command");
-//
-//     // help and exit are added by default
-//
-//     ish.run("> ");
+//     colibry::OIShell::instance().run("> ");
 // }
 //
 // -----------------------------------------------------------------------------
@@ -47,8 +49,8 @@
 //         }
 //    }
 
-#ifndef __OISHELL_H__
-#define __OISHELL_H__
+#ifndef OISHELL_H
+#define OISHELL_H
 
 #include <string>
 #include <vector>
@@ -121,14 +123,12 @@ namespace colibry {
 
 	class ISObserver {
 	public:
-
 		virtual void dispatch(const std::string& cmd, const ishell::Arguments& args);
-
 	public:
 		ISObserver() noexcept;
 		ishell::EasyInit add_cmds() { return ishell::EasyInit{this}; }
 	protected:
-		// default commands (may be overriden -- no automatic dispatch, though)
+		// default commands (may be overriden -- automatic dispatch)
 		virtual void exit(const ishell::Arguments&);
 		virtual void help(const ishell::Arguments&);
 	protected:
@@ -144,7 +144,8 @@ namespace colibry {
 		const ishell::CmdMap& cmdmap() { return cmap_; }
 		const ishell::Arguments* cmdargs(const std::string& cmd) {
 			return &(cmap_.at(cmd).args); }
-		[[nodiscard]] bool is_valid(const std::string& c) const { return cmap_.count(c) > 0; }
+		[[nodiscard]] bool is_valid(const std::string& c) const {
+			return cmap_.count(c) > 0; }
 		void set_prompt(const std::string& np);
 	protected:
 		ishell::CmdMap cmap_;
@@ -176,7 +177,7 @@ namespace colibry {
 		std::string readline(const std::string& prompt);
 	private:
 		std::mutex lock_;
-		ISObserver* observer_;
+		ISObserver* observer_ = nullptr;
 		bool loop_;
 		std::string prompt_;
 	};

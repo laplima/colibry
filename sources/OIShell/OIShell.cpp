@@ -2,15 +2,14 @@
 // ObsIShell: IShell using the Observer Design Pattern
 //
 
-
 #include <sstream>
-// #include <stdexcept>
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
 #include <regex>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include <string_view>
 #include "OIShell.h"
 
 // ----- helpers ---------------------------------------------------------------
@@ -117,8 +116,8 @@ ISObserver::ISObserver() noexcept
 	OIShell::instance().observer(this);	// register this observer
 	// default commands
 	add_cmds()
-		("help", [this](const ishell::Arguments& a) { this->help(a); }, "lists all commands")
-		("exit", [this](const ishell::Arguments& a) { this->exit(a); }, "exits program");
+		("help", MWRAP(help), "lists all commands")
+		("exit", MWRAP(exit), "exits program");
 }
 
 void ISObserver::dispatch(const std::string& cmd, const ishell::Arguments& args)
@@ -200,7 +199,11 @@ void OIShell::run(const std::string& prompt)
 		if (cl.empty())
 			continue;
 		auto args = ishell::split(cl);
-		notify(args);
+		try {
+			notify(args);
+		} catch (const ishell::UnknownCommand& uc) {
+			std::cerr << "unknown command: \"" << uc.what() << "\"\n";
+		}
 	}
 }
 
@@ -234,7 +237,7 @@ char* OIShell::command_generator(const char* text, int state)
 
 	if (state == 0) {
 		index = std::begin(cmap);
-		len = std::size(std::string{text});
+		len = std::string_view{text}.size();
 	}
 
 	auto ss = std::find_if(index, std::end(cmap),
@@ -256,7 +259,7 @@ char* OIShell::args_generator(const char* text, int state)
 	static int len, list_index;	// must be static (for multiple calls)
 
 	if (state == 0) {	// is this the 1st time this generator is called?
-		len = std::string{text}.size();
+		len = std::string_view{text}.size();
 		list_index = 0;
 	}
 
