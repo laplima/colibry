@@ -15,9 +15,9 @@ public:
 	CommandHandler()
 	{
 		add_cmds()
-			("test", {"one", "two"}, SF(test), "test one or two");
+			("test", {"one", "two"}, MWRAP(test), "test one or two");
 	}
-public:
+protected:
 	void test(const colibry::ishell::Arguments& pars) {
 		cout << "test" << endl;
 		bool first = true;
@@ -26,6 +26,7 @@ public:
 			if (first) {
 				cout << s;
 				first = false;
+				set_prompt(s + "> ");
 			} else
 				cout << "],[" << s;
 		}

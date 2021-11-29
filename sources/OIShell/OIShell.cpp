@@ -15,99 +15,97 @@
 
 // ----- helpers ---------------------------------------------------------------
 
-namespace colibry {
-	namespace ishell {
+namespace colibry::ishell {
 
-		// ----- helper functions
+	// ----- helper functions
 
-		Arguments split(const std::string& input)
-		{
-		    std::regex re{"\\s+"};
-		    std::sregex_token_iterator first{std::begin(input), std::end(input), re, -1};
-		    std::sregex_token_iterator last;
-		    return {first, last};
-		}
-
-		inline void ltrim(std::string& s)
-		{
-			s.erase(std::begin(s),
-				std::find_if(std::begin(s), std::end(s), [](auto ch) {
-				return !(std::isspace(ch) || ch=='\t');
-			}));
-		}
-
-		inline void rtrim(std::string& s)
-		{
-			s.erase(std::find_if(std::rbegin(s), std::rend(s), [](auto ch) {
-				return !(std::isspace(ch) || ch=='\t');
-			}).base(), std::end(s));
-		}
-
-		inline void trim(std::string& s)
-		{
-			ltrim(s);
-			rtrim(s);
-		}
-
-		char* dupstr(const std::string& s)
-		{
-			char* d = new char[std::size(s)+1];
-			std::copy(std::begin(s), std::end(s), d);
-			d[std::size(s)] = '\0';
-			return d;
-		}
-
-		// ----- redaline-related
-
-		inline int quote_detector(char *line, int index)
-		{
-			return (index > 0 && line[index - 1] == '\\' && !quote_detector(line, index - 1));
-		}
-
-		inline std::string escape(const std::string& original)
-		{
-			std::string escaped;
-			for (char c : original) {
-				if (c == ' ')
-					escaped += "\\";
-				escaped += c;
-			}
-			return escaped;
-		}
-
-		// ----- CmdData implementation
-
-		CmdData::CmdData(const Arguments& a,
-			const colibry::ishell::CmdMethod& f,
-			const std::string& desc)
-			: args{a}, fn{f}, description{desc}
-		{
-		}
-
-		EasyInit& EasyInit::operator()(const std::string& cmd, const CmdData& c)
-		{
-			owner_->add_cmd(cmd,c);
-			return *this;
-		}
-
-		EasyInit& EasyInit::operator()(const std::string& cmd,
-				const ishell::Arguments& args,
-				const ishell::CmdMethod& f,
-				const std::string& desc)
-		{
-			owner_->add_cmd(cmd, CmdData{args,f,desc});
-			return *this;
-		}
-
-		EasyInit& EasyInit::operator()(const std::string& cmd,
-				const ishell::CmdMethod& f,
-				const std::string& desc)
-		{
-			owner_->add_cmd(cmd, CmdData{{},f,desc});
-			return *this;
-		}
-
+	Arguments split(const std::string& input)
+	{
+	    std::regex re{"\\s+"};
+	    std::sregex_token_iterator first{std::begin(input), std::end(input), re, -1};
+	    std::sregex_token_iterator last;
+	    return {first, last};
 	}
+
+	inline void ltrim(std::string& s)
+	{
+		s.erase(std::begin(s),
+			std::find_if(std::begin(s), std::end(s), [](auto ch) {
+			return !(std::isspace(ch) || ch=='\t');
+		}));
+	}
+
+	inline void rtrim(std::string& s)
+	{
+		s.erase(std::find_if(std::rbegin(s), std::rend(s), [](auto ch) {
+			return !(std::isspace(ch) || ch=='\t');
+		}).base(), std::end(s));
+	}
+
+	inline void trim(std::string& s)
+	{
+		ltrim(s);
+		rtrim(s);
+	}
+
+	char* dupstr(const std::string& s)
+	{
+		char* d = new char[std::size(s)+1];
+		std::copy(std::begin(s), std::end(s), d);
+		d[std::size(s)] = '\0';
+		return d;
+	}
+
+	// ----- redaline-related
+
+	inline int quote_detector(char *line, int index)
+	{
+		return (index > 0 && line[index - 1] == '\\' && !quote_detector(line, index - 1));
+	}
+
+	inline std::string escape(const std::string& original)
+	{
+		std::string escaped;
+		for (char c : original) {
+			if (c == ' ')
+				escaped += "\\";
+			escaped += c;
+		}
+		return escaped;
+	}
+
+	// ----- CmdData implementation
+
+	CmdData::CmdData(const Arguments& a,
+		const colibry::ishell::CmdMethod& f,
+		const std::string& desc)
+		: args{a}, fn{f}, description{desc}
+	{
+	}
+
+	EasyInit& EasyInit::operator()(const std::string& cmd, const CmdData& c)
+	{
+		owner_->add_cmd(cmd,c);
+		return *this;
+	}
+
+	EasyInit& EasyInit::operator()(const std::string& cmd,
+			const ishell::Arguments& args,
+			const ishell::CmdMethod& f,
+			const std::string& desc)
+	{
+		owner_->add_cmd(cmd, CmdData{args,f,desc});
+		return *this;
+	}
+
+	EasyInit& EasyInit::operator()(const std::string& cmd,
+			const ishell::CmdMethod& f,
+			const std::string& desc)
+	{
+		owner_->add_cmd(cmd, CmdData{{},f,desc});
+		return *this;
+	}
+
 }
 
 using namespace colibry;
@@ -161,6 +159,11 @@ void ISObserver::help(const ishell::Arguments&)
 
 }
 
+void ISObserver::set_prompt(const std::string& np)
+{
+	OIShell::instance().set_prompt(np);
+}
+
 // ----- ISObserver ------------------------------------------------------------
 
 OIShell OIShell::instance_;
@@ -189,9 +192,10 @@ void OIShell::notify(const ishell::Arguments& args)
 
 void OIShell::run(const std::string& prompt)
 {
+	prompt_ = prompt;
 	loop_ = true;	// may be rerun after a stop
 	while (loop_) {
-		std::string cl = readline(prompt);
+		std::string cl = readline(prompt_);
 		// ishell::trim(cl);
 		if (cl.empty())
 			continue;

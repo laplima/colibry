@@ -22,7 +22,7 @@
 //     auto& ish = colibry::OIShell::instance();
 //     CommandHandler ch;
 //     ch.add_cmds()
-//         ("test", { "one", "two"}, SF(test), "test command");
+//         ("test", { "one", "two"}, MWRAP(test), "test command");
 //
 //     // help and exit are added by default
 //
@@ -70,10 +70,11 @@ namespace colibry {
 		using CmdMethod = std::function<void(const colibry::ishell::Arguments&)>;
 
 		// is there another way of doing this without using macros??
-		#define SF(fn) [this](const colibry::ishell::Arguments& a) { this->fn(a); }
+		// Method (Command) Wrapper
+		#define MWRAP(fn) [this](const colibry::ishell::Arguments& a) { this->fn(a); }
 
 		struct CmdData {
-			CmdData() {}
+			CmdData() = default;
 			CmdData(const Arguments& a, const CmdMethod& f, const std::string& desc);
 
 			Arguments args;				// options for args (after command name)
@@ -143,7 +144,8 @@ namespace colibry {
 		const ishell::CmdMap& cmdmap() { return cmap_; }
 		const ishell::Arguments* cmdargs(const std::string& cmd) {
 			return &(cmap_.at(cmd).args); }
-		bool is_valid(const std::string& c) const { return cmap_.count(c) > 0; }
+		[[nodiscard]] bool is_valid(const std::string& c) const { return cmap_.count(c) > 0; }
+		void set_prompt(const std::string& np);
 	protected:
 		ishell::CmdMap cmap_;
 		ishell::Arguments regorder_;	// registration order of the commands
@@ -158,22 +160,25 @@ namespace colibry {
 		ISObserver* observer() { return observer_; }
 		void run(const std::string& prompt);
 		void stop() { loop_ = false; }
+		void set_prompt(const std::string& np) { prompt_ = np; }
 	private:
 		static OIShell instance_;
 		static char* command_generator(const char* text, int state);
 		static char* args_generator(const char* text, int state);
 		static char** my_completion(const char* text, int start, int end);
 		static const ishell::Arguments* args0_;	// current cmd args
-	private:
-		OIShell();
+	public:
 		OIShell(const OIShell&) = delete;
 		OIShell& operator=(const OIShell&) = delete;
+	private:
+		OIShell();
 		void notify(const ishell::Arguments& args);
 		std::string readline(const std::string& prompt);
 	private:
 		std::mutex lock_;
 		ISObserver* observer_;
 		bool loop_;
+		std::string prompt_;
 	};
 
 }
