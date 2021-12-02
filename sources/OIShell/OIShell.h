@@ -19,7 +19,9 @@
 //     }
 // protected:
 //     void test(const colibry::ishell::Arguments& pars)
+//     // alternatively: CSIG(test,pars)
 //     {
+//           // args will NOT contain the command itself at [0]!
 //           // implement command
 //			 set_prompt(args[0]);
 //     }
@@ -74,6 +76,8 @@ namespace colibry {
 		// is there another way of doing this without using macros??
 		// Method (Command) Wrapper
 		#define MWRAP(fn) [this](const colibry::ishell::Arguments& a) { this->fn(a); }
+		// Command signature
+		#define CSIG(cmd, args) void cmd(const colibry::ishell::Arguments& args)
 
 		struct CmdData {
 			CmdData() = default;

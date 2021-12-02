@@ -14,6 +14,9 @@
 
 // ----- helpers ---------------------------------------------------------------
 
+using std::cout;
+using std::endl;
+
 namespace colibry::ishell {
 
 	// ----- helper functions
@@ -134,27 +137,35 @@ void ISObserver::exit(const ishell::Arguments&)
 	OIShell::instance().stop();
 }
 
-void ISObserver::help(const ishell::Arguments&)
+void ISObserver::help(const ishell::Arguments& args)
 {
-	// Find max command size
-	unsigned short max{0};
-	for (const auto& c : regorder_) {
-		// sorted.emplace_back(cmd);
-		if (std::size(c) > max)
-			max = std::size(c);
+	if (args.empty()) {
+		// show all help
+		// Find max command size
+		unsigned short max{0};
+		for (const auto& c : regorder_) {
+			// sorted.emplace_back(cmd);
+			if (std::size(c) > max)
+				max = std::size(c);
+		}
+		max += 4;
+
+		// std::sort(sorted.begin(), sorted.end());
+
+		auto abstab = [](unsigned short t) -> std::string {
+			std::string esc{char(0x1b)};
+			return esc + "[80D" + esc + "[" + std::to_string(t) + "C";
+		};
+
+		for (const auto &c : regorder_)
+			std::cout << std::setw(max) << c << abstab(max) << " : "
+					  << cmap_[c].description << std::endl;
+	} else {
+		cout << args[0];
+		for (const auto& a : cmap_[args[0]].args)
+			cout << " <" << a << ">";
+		cout << endl;
 	}
-	max += 4;
-
-	// std::sort(sorted.begin(), sorted.end());
-
-	auto abstab = [](unsigned short t) -> std::string {
-		std::string esc{char(0x1b)};
-		return esc + "[80D" + esc + "[" + std::to_string(t) + "C";
-	};
-
-	for (const auto &c : regorder_)
-		std::cout << std::setw(max) << c << abstab(max) << " : "
-				  << cmap_[c].description << std::endl;
 
 }
 
@@ -203,6 +214,10 @@ void OIShell::run(const std::string& prompt)
 			notify(args);
 		} catch (const ishell::UnknownCommand& uc) {
 			std::cerr << "unknown command: \"" << uc.what() << "\"\n";
+		} catch (const ishell::SyntaxError& se) {
+			observer_->help({se.what()});
+		} catch (...) {
+			throw;
 		}
 	}
 }
