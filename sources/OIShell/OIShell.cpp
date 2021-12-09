@@ -202,7 +202,8 @@ void OIShell::notify(const ishell::Arguments& args)
 
 void OIShell::run(const std::string& prompt)
 {
-	prompt_ = prompt;
+    if (!prompt.empty())
+	    prompt_ = prompt;
 	loop_ = true;	// may be rerun after a stop
 	while (loop_) {
 		std::string cl = readline(prompt_);

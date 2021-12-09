@@ -163,7 +163,7 @@ namespace colibry {
 		static OIShell& instance() { return instance_; }
 		void observer(ISObserver *obs);
 		ISObserver* observer() { return observer_; }
-		void run(const std::string& prompt);
+		void run(const std::string& prompt="");
 		void stop() { loop_ = false; }
 		void set_prompt(const std::string& np) { prompt_ = np; }
 	private:
