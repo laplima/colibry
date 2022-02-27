@@ -1,85 +1,82 @@
 //
 // Thread-safe Queue
 //
-// Depends on Semaphore library.
-//
-// (C) 2011 LAPLJ. All rights reserved.
+// (C) 2011-22 LAPLJ. All rights reserved.
 //
 
-#include <Semaphore.h>
-#include <vector>
+#include <queue>
+#include <semaphore>
+#include <mutex>
+#include <stdexcept>
 
 namespace colibry {
 
-    class EmptyQueue {};
+    template <typename T, int max>
+	class SafeQueue {
+	public:
+		virtual void insert(const T& x);
+		virtual T remove();
+		virtual bool try_remove(T& x);
+		virtual T try_remove();
+		virtual void clean();
+	private:
+		std::queue<T> data_;
+		mutable std::mutex mutex_{};
+		mutable std::counting_semaphore<max> full_{0};
+	};
 
-    template <class T>
-    class SafeQueue {
-    private:
-	std::vector<T> _data;
-	Semaphore _mutex;
-	Semaphore _full;
-    public:
-	SafeQueue()
+	// implementation
+
+	template<typename T, int max>
+	void SafeQueue<T,max>::insert(const T& x)
 	{
-	    _mutex.SetVal(1);
-	    _full.SetVal(0);
+		{
+			std::lock_guard<std::mutex> g{mutex_};
+			data_.push(x);
+		}
+		full_.release();
 	}
-	virtual ~SafeQueue() {}
-	virtual void insert(const T& x)
+
+	template<typename T, int max>
+	T SafeQueue<T,max>::remove()
 	{
-	    _mutex.Down();
-	    _data.push_back(x);
-	    _mutex.Up();
-	    _full.Up();
+		full_.acquire();
+		std::lock_guard<std::mutex> g{mutex_};
+		T aux = data_.front();
+		data_.pop();
+		return aux;
 	}
-	    
-	virtual T remove()
+
+	template<typename T, int max>
+	bool SafeQueue<T,max>::try_remove(T& x)
 	{
-	    _full.Down();
-	    _mutex.Down();
-	    T aux = _data.front();
-	    _data.erase(_data.begin());
-	    _mutex.Up();
-	    return aux;
-	}
-	
-	virtual bool try_remove(T& x)
-	{
-	    _mutex.Down();
-	    if (_data.size() == 0) {
-		_mutex.Up();
-		return false;
-	    }
-	    _full.Down(); // won't block
-	    x = _data.front();
-	    _data.erase(_data.begin());
-	    _mutex.Up();
+		std::lock_guard<std::mutex> g{mutex_};
+		if (data_.empty())
+			return false;
+	    full_.acquire(); // won't bacquire
+	    x = data_.front();
+	    data_.pop();
 	    return true;
 	}
 
-	virtual T try_remove()
+	template<typename T, int max>
+	T SafeQueue<T,max>::try_remove()
 	{
-	    _mutex.Down();
-	    if (_data.size() == 0) {
-		_mutex.Up();
-		throw EmptyQueue();
-	    }
-	    _full.Down();
-	    T aux = _data.front();
-	    _data.erase(_data.begin());
-	    _mutex.Up();
-	    return aux;
+		std::lock_guard<std::mutex> g{mutex_};
+		if (data_.empty())
+			throw std::underflow_error{"empty SafeQueue"};
+		full_.acquire();
+		T aux = data_.front();
+		data_.pop();
+		return aux;
 	}
-	
-	virtual void clean()
+
+	template<typename T, int max>
+	void SafeQueue<T,max>::clean()
 	{
-	    _mutex.Down();
-	    _data.clear();
-	    _full.SetVal(0);
-	    _mutex.Up();
+		std::lock_guard<std::mutex> g{mutex_};
+		std::queue<T> e;
+		data_.swap(e);
 	}
-	
-    };
-    
-} // namespace
+
+} // namespace colibry

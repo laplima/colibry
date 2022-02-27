@@ -20,6 +20,7 @@ set(components
 	InteractiveShell
 	IShell
     OIShell
+    JIShell
 	Logger
 	OptionManager
 	orbutils
@@ -59,7 +60,8 @@ set(libnames
 	TAO_AnyTypeCode
 	TAO_CosNaming
 	TAO_IORTable
-	readline)
+	readline
+	fmt)
 
 # NO_DEFAULT_PATH prevents macos from getting readline from /usr/lib/.
 # /opt/local/lib/ is the right path

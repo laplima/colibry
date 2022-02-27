@@ -1,0 +1,90 @@
+[
+	{
+		"help": {
+			"desc": "show help",
+			"args": [
+				{
+					"all": {
+						"desc": "show help for all commands",
+						"args": []
+					}
+				},
+				{
+					"almost": {
+						"desc": "show help for almost all commands",
+						"args": []
+					}
+				}
+			]
+		}
+	},
+	{
+		"exit": {
+			"desc": "exit program",
+			"args": []
+		}
+	},
+	{
+		"list": {
+			"desc": "list",
+			"args": [
+				{
+					"students": {
+						"desc": "list students",
+						"args": []
+					}
+				},
+				{
+					"projects": {
+						"desc": "list projects",
+						"args": [
+							{
+								"open" : {
+									"desc": "list open projects",
+									"args": []
+								}
+							},
+							{
+								"closed": {
+									"desc": "list closed projects",
+									"args": []
+								}
+							}
+						]
+					}
+				},
+				{
+					"supervisors": {
+						"desc": "list supervisors",
+						"args": []
+					}
+				},
+				{
+					"\"Simone Menezes Lima\"": {
+						"desc": "student",
+						"args": []
+					}
+				}
+			]
+		}
+	},
+	{
+		"liter": {
+			"desc": "make 1 liter",
+			"args": [
+				{
+					"paint": {
+						"desc": "make 1 liter of paint",
+						"args": []
+					}
+				},
+				{
+					"pain": {
+						"desc": "no pain no gain",
+						"args": []
+					}
+				}
+			]
+		}
+	}
+]

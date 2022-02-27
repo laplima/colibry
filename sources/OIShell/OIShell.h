@@ -1,4 +1,6 @@
 //
+// ALSO CONSIDER USING LINENOISE-based INTERACTIVE SHELL: JIShell
+//
 // OIShell: interactive shell using the Observer Design Pattern
 // (C) 2020-21 by LAPLJ. All rights reserved.
 //
