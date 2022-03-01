@@ -34,8 +34,40 @@ int main()
 	MyCommands cmds;		// observer
 	JIShell sh{cmds};		// subject
 
-	PersistenceManager::load("../cmds.json", sh);
-
+	// PersistenceManager::load_file("../cmds.json", sh);
+	colibry::PersistenceManager::load_str(R"([
+		{
+			"help": {
+				"desc": "show help",
+				"args": []
+			}
+		},
+		{
+			"exit": {
+				"desc": "exit program",
+				"args": []
+			}
+		},
+		{
+			"list": {
+				"desc": "list projects or supervisors",
+				"args": [
+					{
+						"projects": {
+							"desc": "list projects",
+							"args": []
+						}
+					},
+					{
+						"supervisors": {
+							"desc": "list supervisors",
+							"args": []
+						}
+					}
+				]
+			}
+		}
+	])", sh);
 	sh.set_prompt("=> ");
 	sh.cmdloop();
 }

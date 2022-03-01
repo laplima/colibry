@@ -125,7 +125,9 @@ namespace colibry {
 
 	class PersistenceManager {
 	public:
-		static void load(const std::filesystem::path& cmdjson, JIShell& sh);
+		static void load_file(const std::filesystem::path& fpath, JIShell& sh);
+		static void load_str(const std::string& s, JIShell& sh);
+		static void load_json(const nlohmann::json& j, JIShell& sh);
 	private:
 		struct CmdData {
 			std::string cmd;

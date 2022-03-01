@@ -87,6 +87,8 @@ void JIShell::completion(std::string_view buffer, Stringv& compls,
 	const Stringv& sv = cmds[tokens-1];
 	if (std::find(sv.begin(), sv.end(), b) != sv.end())
 		++tokens;
+	if (tokens > cmds.size())
+		return;
 
 	for (const auto&c : cmds[tokens-1])
 		if (c.starts_with(buffer))
@@ -112,7 +114,6 @@ void JIShell::add_cmd(const string& cmd, const string& desc, int ntok)
 
 void JIShell::cmdloop()
 {
-	fmt::print("This is the command loop!\n");
 	std::string cmd;
 	while (cobs.running()) {
 		linenoise::Readline(prompt.c_str(), cmd);
@@ -133,25 +134,33 @@ void JIShell::cmdloop()
 
 // ----------------------------------------------------------------------------
 
-void PersistenceManager::load(const std::filesystem::path& cmdjson,
+void PersistenceManager::load_file(const std::filesystem::path& fpath,
 	JIShell& sh)
 {
-	std::ifstream input{cmdjson};
+	std::ifstream input{fpath};
 	if (!input)
 		throw std::runtime_error{fmt::format(R"(file "{}" not found)",
-			cmdjson.string())};
+			fpath.string())};
 	json ctree;		// command tree
 	input >> ctree;
+	load_json(ctree, sh);
+}
 
+void PersistenceManager::load_str(const std::string& s, JIShell& sh)
+{
+	json ctree = json::parse(s);
+	load_json(ctree, sh);
+}
+
+void PersistenceManager::load_json(const nlohmann::json& j, JIShell& sh)
+{
 	Commands cmds;
-	for (const auto& cmd : ctree)
+	for (const auto& cmd : j)
 		build_command("", cmd, cmds, 0);
 
 	for (int i=0; i<cmds.size(); ++i)
-		for (const auto& cd : cmds[i]) {
+		for (const auto& cd : cmds[i])
 			sh.add_cmd(cd.cmd,cd.descr,i);
-			// fmt::print(">> {} ({})\n", cd.cmd, cd.descr);
-		}
 }
 
 void PersistenceManager::build_command(const std::string& prefix,
