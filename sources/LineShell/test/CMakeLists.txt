@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.20)
 project(lnjson)
 
 # project sources
-set(sources ../JIShell.cpp jishell-test.cpp)
+set(sources ../LineShell.cpp jishell-test.cpp)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_BUILD_TYPE Debug)

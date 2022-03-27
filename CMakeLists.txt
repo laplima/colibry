@@ -20,7 +20,7 @@ set(components
 	InteractiveShell
 	IShell
     OIShell
-    JIShell
+    LineShell
 	Logger
 	OptionManager
 	orbutils

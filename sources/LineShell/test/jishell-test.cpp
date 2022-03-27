@@ -2,10 +2,11 @@
 #include <fmt/ostream.h>
 #include <string>
 #include <vector>
-#include "JIShell.h"
+#include "../LineShell.h"
 
 using fmt::print;
 using namespace colibry;
+using namespace colibry::lineshell;
 
 class MyCommands : public CmdObserver {
 public:
@@ -27,15 +28,15 @@ public:
 };
 
 // template<typename C, std::string file_name>
-// JIShell
+// LineShell
 
 int main()
 {
 	MyCommands cmds;		// observer
-	JIShell sh{cmds};		// subject
+	LineShell sh{cmds};		// subject
 
-	// PersistenceManager::load_file("../cmds.json", sh);
-	colibry::PersistenceManager::load_str(R"([
+	// PersistenceManager::load_file(sh,"../cmds.json");
+	PersistenceManager::load_str(sh,R"([
 		{
 			"help": {
 				"desc": "show help",
@@ -67,7 +68,17 @@ int main()
 				]
 			}
 		}
-	])", sh);
+	])");
+	sh.add_cmd("list supervisors João Felipe", "Joca", 2);
+	sh.add_cmd("list supervisors João Pedro", "Jope", 2);
+
+	// sh.add_cmd(Command::create("list")
+	// 	.described_as("list projects or supervisors")
+	// 	.executed_by(cmds.make_list)
+	// 	.with_argument("projects")
+	// 	.with_argument("supervisors")
+	// );
+
 	sh.set_prompt("=> ");
 	sh.cmdloop();
 }

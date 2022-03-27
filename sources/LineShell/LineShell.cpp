@@ -1,18 +1,20 @@
-#include "JIShell.h"
+#include "LineShell.h"
 #include <functional>
 #include <stdexcept>
 #include <vector>
 #include <regex>
 #include "linenoise.h"
 
-using namespace std;
 using namespace colibry;
 using json = nlohmann::json;
+using std::string;
 using std::runtime_error;
 
 // ----------------------------------------------------------------------------
 
-EasyInit& EasyInit::operator()(const string& cmd, const Method& f)
+lineshell::EasyInit& lineshell::EasyInit::operator()(
+	const string& cmd,
+	const Method& f)
 {
 	owner.bind(cmd, f);
 	return *this;
@@ -32,51 +34,57 @@ void CmdObserver::add(std::string cmd, std::string h)
 	fmap[std::move(cmd)].description = std::move(h);
 }
 
-void CmdObserver::bind(const std::string& cmd, const Method& f)
+void CmdObserver::bind(const std::string& cmd, const lineshell::Method& f)
 {
 	fmap[cmd].f = f;
 }
 
-EasyInit CmdObserver::bind()
+lineshell::EasyInit CmdObserver::bind()
 {
-	return EasyInit{*this};
+	return lineshell::EasyInit{*this};
 }
 
-void CmdObserver::dispatch(const Stringv& args)
+void CmdObserver::dispatch(const lineshell::Stringv& args)
 {
 	if (fmap.count(args[0]) == 0)
 		throw runtime_error{fmt::format("unknown command: {}", args[0])};
-	fmap.at(args[0]).f({args.begin()+1, args.end()});
+	// fmap.at(args[0]).f({args.begin()+1, args.end()});
+	fmap.at(args[0]).f(args);
 }
 
-void CmdObserver::help(const Stringv& /*unused*/)
+void CmdObserver::help(const lineshell::Stringv& /*unused*/)
 {
 	for (const auto& [cmd, cdata] : fmap)
 		fmt::print("{:>10} :  {}\n", cmd, cdata.description);
 }
 
-void CmdObserver::exit_(const Stringv& /*unused*/)
+void CmdObserver::exit_(const lineshell::Stringv& /*unused*/)
 {
 	stop();
 }
 
 // ----------------------------------------------------------------------------
 
-JIShell::JIShell(CmdObserver& obs) : cobs{obs}
+LineShell::LineShell(CmdObserver& obs) : cobs{obs}
 {
-	auto cc = [this](const char* eb, vector<string>& c) {
-		JIShell::completion(eb, c, this->commands);
+	auto cc = [this](const char* eb, std::vector<string>& c) {
+		LineShell::completion(eb, c, this->commands);
 	};
 
-	linenoise::SetCompletionCallback(cc);
-	linenoise::SetMultiLine(false);
-	linenoise::SetHistoryMaxLen(4);
-	linenoise::LoadHistory("history.txt");
+	using namespace linenoise;
+
+	SetCompletionCallback(cc);
+	SetMultiLine(false);
+	SetHistoryMaxLen(4);
+	LoadHistory("history.txt");
 }
 
-void JIShell::completion(std::string_view buffer, Stringv& compls,
-	const std::vector<Stringv>& cmds)
+void LineShell::completion(std::string_view buffer,
+	lineshell::Stringv& compls,
+	const std::vector<lineshell::Stringv>& cmds)
 {
+	using namespace lineshell;
+
 	string b{string{buffer}};
 	trim(b);
 	auto tokens = count_tokens(b);
@@ -95,12 +103,12 @@ void JIShell::completion(std::string_view buffer, Stringv& compls,
 			compls.push_back(c);
 }
 
-void JIShell::set_prompt(std::string p)
+void LineShell::set_prompt(std::string p)
 {
 	prompt = std::move(p);
 }
 
-void JIShell::add_cmd(const string& cmd, const string& desc, int ntok)
+void LineShell::add_cmd(const string& cmd, const string& desc, int ntok)
 {
 	if (ntok >= commands.size())
 		commands.resize(ntok+1);
@@ -112,20 +120,23 @@ void JIShell::add_cmd(const string& cmd, const string& desc, int ntok)
 		cobs.add(cmd, desc);
 }
 
-void JIShell::cmdloop()
+void LineShell::cmdloop()
 {
-	std::string cmd;
+	using namespace lineshell;
+	string cmd;
 	while (cobs.running()) {
 		linenoise::Readline(prompt.c_str(), cmd);
 		trim(cmd);
-		auto cmdline = split(cmd);
+		auto cmdline = splitargs(cmd);
 		trim(cmdline);
+		if (cmdline.empty())
+			continue;
 		try {
 			cobs.dispatch(cmdline);
 			linenoise::AddHistory(cmd.c_str());
-		} catch(const runtime_error& e) {
+		} catch(const std::runtime_error& e) {
 			fmt::print(stderr, "{}\n", e.what());
-		} catch (const bad_function_call&) {
+		} catch (const std::bad_function_call&) {
 			fmt::print(stderr, "no function bound to command \"{}\"\n", cmdline[0]);
 		}
 	}
@@ -134,8 +145,9 @@ void JIShell::cmdloop()
 
 // ----------------------------------------------------------------------------
 
-void PersistenceManager::load_file(const std::filesystem::path& fpath,
-	JIShell& sh)
+void lineshell::PersistenceManager::load_file(
+	LineShell& sh,
+	const std::filesystem::path& fpath)
 {
 	std::ifstream input{fpath};
 	if (!input)
@@ -143,16 +155,20 @@ void PersistenceManager::load_file(const std::filesystem::path& fpath,
 			fpath.string())};
 	json ctree;		// command tree
 	input >> ctree;
-	load_json(ctree, sh);
+	load_json(sh, ctree);
 }
 
-void PersistenceManager::load_str(const std::string& s, JIShell& sh)
+void lineshell::PersistenceManager::load_str(
+	LineShell& sh,
+	const std::string& s)
 {
 	json ctree = json::parse(s);
-	load_json(ctree, sh);
+	load_json(sh, ctree);
 }
 
-void PersistenceManager::load_json(const nlohmann::json& j, JIShell& sh)
+void lineshell::PersistenceManager::load_json(
+	LineShell& sh,
+	const nlohmann::json& j)
 {
 	Commands cmds;
 	for (const auto& cmd : j)
@@ -163,12 +179,16 @@ void PersistenceManager::load_json(const nlohmann::json& j, JIShell& sh)
 			sh.add_cmd(cd.cmd,cd.descr,i);
 }
 
-void PersistenceManager::build_command(const std::string& prefix,
-	const json& cmdj, Commands& cmds, unsigned short ntok)
+void lineshell::PersistenceManager::build_command(
+	const std::string& prefix,
+	const json& cmdj,
+	Commands& cmds,
+	unsigned short ntok)
 {
 	const auto& first = cmdj.items().begin();
-	std::string cmdstr = (prefix.empty() ? first.key() : fmt::format("{} {}", prefix, first.key()));
-	std::string helpstr = first.value()["desc"].get<std::string>();
+	string cmdstr = (prefix.empty() ?
+		first.key() : fmt::format("{} {}", prefix, first.key()));
+	string helpstr = first.value()["desc"].get<string>();
 	try {
 		cmds.at(ntok).push_back({ cmdstr, helpstr });
 	} catch (const std::out_of_range& ) {
@@ -180,7 +200,7 @@ void PersistenceManager::build_command(const std::string& prefix,
 
 // ----------------------------------------------------------------------------
 
-std::vector<std::string> colibry::split(const std::string& input)
+lineshell::Stringv lineshell::splitargs(const string& input)
 {
 	// split by spaces (text under quotes is not split by spaces)
 	std::regex re{R"([^\s"']+|"[^"]*"|'[^']*')"};
@@ -192,7 +212,12 @@ std::vector<std::string> colibry::split(const std::string& input)
 	return vs;
 }
 
-void colibry::trim(std::string& s)
+lineshell::Stringv::size_type lineshell::count_tokens(const string& s)
+{
+	return splitargs(s).size();
+}
+
+void lineshell::trim(string& s)
 {
 	const char* pattern = " \t\n\r\"'";
 	if (s.empty())
@@ -205,7 +230,7 @@ void colibry::trim(std::string& s)
 		s = s.substr(inf, sup-inf+1);
 }
 
-void colibry::trim(Stringv& sv)
+void lineshell::trim(Stringv& sv)
 {
 	for (auto& s : sv)
 		trim(s);
