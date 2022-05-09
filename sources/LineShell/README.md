@@ -2,6 +2,8 @@
 
 ## A command-line completer/interpreter based on linenoise
 
+Important: `fmt` library is required in order to compile
+
 ### Define observer class
 
 ```cpp
@@ -39,8 +41,8 @@
 	MyCommands cmds;			// observer
 	
 	LineShell sh{cmds};			// subject
-	PersistenceManager::load(sh,"cmds.json");
-	PersistenceManager::load(sh,R"(
+	PersistenceManager::load_file(sh,"cmds.json");
+	PersistenceManager::load_str(sh,R"(
      	// include JSON string here
 	)");
 
@@ -50,4 +52,58 @@
 
 	sh.set_prompt("=> ");
 	sh.cmdloop();
+```
+
+## JSON Command Specification
+
+Sample:
+
+```json
+[
+	{
+		"list": {
+			"desc": "list",
+			"args": [
+				{
+					"students": {
+						"desc": "list students",
+						"args": []
+					}
+				},
+				{
+					"projects": {
+						"desc": "list projects",
+						"args": [
+							{
+								"open" : {
+									"desc": "list open projects",
+									"args": []
+								}
+							},
+							{
+								"closed": {
+									"desc": "list closed projects",
+									"args": []
+								}
+							}
+						]
+					}
+				},
+				{
+					"supervisors": {
+						"desc": "list supervisors",
+						"args": []
+					}
+				},
+				{
+					"\"Simone Menezes Lima\"": {
+						"desc": "student",
+						"args": []
+					}
+				}
+			]
+		}
+	}
+]
+
 ```

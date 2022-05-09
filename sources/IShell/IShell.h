@@ -1,7 +1,7 @@
 //
 //
 //
-//                OBSOLETE! Use OIShell instead.
+//                OBSOLETE! Use LineShell instead.
 //
 //
 //
