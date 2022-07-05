@@ -15,7 +15,7 @@
 std::string colibry::ABSTAB(unsigned short t)
 {
 	std::ostringstream ss;
-	ss << cursor_back(term_cols()) << ESCSEQ << t << "C";
+	ss << cursor_back(term_cols()) << ESCSEQ << t << 'C';
 	return ss.str();
 }
 
@@ -26,7 +26,7 @@ std::string colibry::SEPARATOR(unsigned short t)
 	if (t>cols || t==0)
 		t = cols;
 	for (auto i=0; i<t; ++i)
-		ss << "-";
+		ss << '-';
 	return ss.str();
 }
 
@@ -49,23 +49,39 @@ unsigned short colibry::term_lines()
 std::string colibry::cursor_back(unsigned short col)
 {
 	std::stringstream ss;
-	ss << ESCSEQ << col << "D";
+	ss << ESCSEQ << col << 'D';
 	return ss.str();
 }
 
 std::string colibry::cursor_up(unsigned short lines)
 {
 	std::stringstream ss;
-	ss << ESCSEQ << lines << "A";
+	ss << ESCSEQ << lines << 'A';
 	return ss.str();
 }
 
 std::string colibry::erase_end_of_line()
 {
 	std::stringstream ss;
-	ss << ESCSEQ << "K";
+	ss << ESCSEQ << 'K';
 	return ss.str();
 }
+
+std::string colibry::save_cursor()
+{
+	std::stringstream ss;
+	ss << ESCSEQ << 's';
+	return ss.str();
+}
+
+std::string colibry::restore_cursor()
+{
+	std::stringstream ss;
+	ss << ESCSEQ << 'u';
+	return ss.str();
+}
+
+
 
 std::string colibry::set_color(unsigned char tc, bool bold)
 {

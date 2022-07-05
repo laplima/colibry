@@ -21,6 +21,8 @@ namespace colibry {
 	std::string cursor_back(unsigned short col=maxcursor);
 	std::string cursor_up(unsigned short lines=maxcursor);
 	std::string erase_end_of_line();
+	std::string save_cursor();
+	std::string restore_cursor();
 
 	std::string set_color(unsigned char tc, bool bold=false);	// 0<=tc<=7
 	std::string set_color(unsigned char r, unsigned char g, unsigned char b, bool bold=false);
