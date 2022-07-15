@@ -31,8 +31,8 @@
 //	  int getValue() const { ... }
 //
 
-#ifndef __PROPERTY_H__
-#define __PROPERTY_H__
+#ifndef PROPERTY_H
+#define PROPERTY_H
 
 #include <iostream>
 #include <string>

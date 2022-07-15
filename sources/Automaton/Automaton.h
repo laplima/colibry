@@ -10,8 +10,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AUTOMATON_H__
-#define __AUTOMATON_H__
+#ifndef AUTOMATON_H
+#define AUTOMATON_H
 
 #include <iostream>
 #include <string>

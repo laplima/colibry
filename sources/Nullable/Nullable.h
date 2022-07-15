@@ -1,4 +1,6 @@
 //
+// DEPRECATED: use std::optional
+//
 // Nullable
 // (C) 2011 by LAPLJ. All rights reserved.
 //

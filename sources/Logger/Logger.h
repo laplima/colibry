@@ -21,8 +21,8 @@
 // macros. This is no longer needed.
 //
 
-#ifndef __LOGGER_H__
-#define __LOGGER_H__
+#ifndef LOGGER_H
+#define LOGGER_H
 
 #include <iostream>
 #include <sstream>

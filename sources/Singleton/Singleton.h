@@ -1,5 +1,5 @@
-#ifndef __SINGLETON_H__
-#define __SINGLETON_H__
+#ifndef SINGLETON_H
+#define SINGLETON_H
 
 namespace colibry {
 

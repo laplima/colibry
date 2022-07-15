@@ -1,5 +1,5 @@
-#ifndef __SIMPLEPROPERTY_H__
-#define __SIMPLEPROPERTY_H__
+#ifndef SIMPLEPROPERTY_H
+#define SIMPLEPROPERTY_H
 
 //
 // This is a simple implementation of a property

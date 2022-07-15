@@ -1,5 +1,5 @@
-#ifndef __TEXTTOOLS_H__
-#define __TEXTTOOLS_H__
+#ifndef TEXTTOOLS_H
+#define TEXTTOOLS_H
 
 #include <string>
 #include <vector>

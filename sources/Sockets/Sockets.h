@@ -8,8 +8,8 @@
 // OS: UNIX
 //
 
-#ifndef __SOCKETS_H__
-#define __SOCKETS_H__
+#ifndef SOCKETS_H
+#define SOCKETS_H
 
 #include <sys/types.h>
 #include <sys/socket.h>

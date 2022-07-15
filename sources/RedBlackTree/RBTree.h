@@ -5,8 +5,8 @@
 // Based on Cormen, chap. 13
 //
 
-#ifndef __RBTREE_H__
-#define __RBTREE_H__
+#ifndef RBTREE_H
+#define RBTREE_H
 
 #include <stdexcept>
 

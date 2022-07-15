@@ -9,8 +9,8 @@
 // The name can be in the form of "/c1/c2/name" (dash-separated).
 //
 
-#ifndef __NAMESERVER_H__
-#define __NAMESERVER_H__
+#ifndef NAMESERVER_H
+#define NAMESERVER_H
 
 #include <memory>
 #include <string>

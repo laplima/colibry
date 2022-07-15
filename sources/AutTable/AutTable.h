@@ -11,8 +11,8 @@
 //
 //////
 
-#ifndef __AUTTABLE__
-#define __AUTTABLE__
+#ifndef AUTTABLE
+#define AUTTABLE
 
 #include <iostream>
 #include <string>

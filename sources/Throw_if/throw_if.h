@@ -10,8 +10,8 @@
 //	throw_if(x<0,"x = " << x);
 //
 
-#ifndef __THROW_IF_H__
-#define __THROW_IF_H__
+#ifndef THROW_IF_H
+#define THROW_IF_H
 
 #include <string>
 #include <stdexcept>
@@ -21,7 +21,7 @@ namespace colibry {
 
 	class Formatter {
 	public:
-		Formatter() {}
+		Formatter() = default;
 		~Formatter() {}
 		template<typename Type>
 		Formatter& operator<<(const Type& s) { m_ss << s; return *this; }

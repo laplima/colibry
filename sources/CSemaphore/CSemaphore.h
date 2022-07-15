@@ -1,4 +1,6 @@
 //
+// DEPRECATED
+//
 // C++11 "counting" semaphore implementation using condition variables
 // (C) 2013-2020 by laplima
 //

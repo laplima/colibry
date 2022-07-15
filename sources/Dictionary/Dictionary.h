@@ -20,8 +20,8 @@
 //
 //-----------------------------------------------------------------------------
 
-#ifndef __DICTIONARY_H__
-#define __DICTIONARY_H__
+#ifndef DICTIONARY_H
+#define DICTIONARY_H
 
 #include <string>
 #include <vector>

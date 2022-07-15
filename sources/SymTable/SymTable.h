@@ -19,8 +19,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __SYMTABLE_H__
-#define __SYMTABLE_H__
+#ifndef SYMTABLE_H
+#define SYMTABLE_H
 
 #include <string>
 #include <vector>
