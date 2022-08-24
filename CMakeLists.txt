@@ -69,7 +69,7 @@ set(libnames
 
 foreach(lib ${libnames})
 	set(alib ${lib}-NOTFOUND)
-	find_library(alib ${lib} PATHS "/opt/local/lib" "$ENV{ACE_ROOT}/lib" NO_DEFAULT_PATH)
+	find_library(alib ${lib} PATHS "/opt/local/lib" "/opt/local/lib/libfmt9" "$ENV{ACE_ROOT}/lib" NO_DEFAULT_PATH)
 	find_library(alib ${lib}) # will find now if not found in the previous line
 	set(mylibs ${mylibs} ${alib})
 endforeach(lib)
@@ -78,7 +78,7 @@ endforeach(lib)
 
 # Include directories
 
-include_directories("/opt/local/include"
+include_directories("/opt/local/include" "/opt/local/include/libfmt9"
 	"$ENV{ACE_ROOT}"
 	"$ENV{TAO_ROOT}"
 	"$ENV{TAO_ROOT}/orbsvcs"
