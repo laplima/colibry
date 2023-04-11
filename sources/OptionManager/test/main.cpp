@@ -14,6 +14,7 @@ int main(int argc, char* argv[])
 
 	OptionManager om{argc, argv};
 
-	if (om.has("help"))
-		cout << "HELP ME!" << endl;
+	if (om.has("help")) {
+		cout << om.program() << " HELP ME!" << endl;
+	}
 }

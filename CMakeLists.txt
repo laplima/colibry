@@ -84,6 +84,8 @@ include_directories("/opt/local/include" "/opt/local/include/libfmt9"
 	"$ENV{TAO_ROOT}/orbsvcs"
 	${incs} "$ENV{COLIBRY}/include")
 
+add_compile_options(-Wno-deprecated-declarations -Wno-deprecated-builtins)
+
 # Libraries
 
 add_library(colibry SHARED ${sources})

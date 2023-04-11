@@ -1,47 +1,66 @@
 #include "OptionManager.h"
 #include <cstring>
-// #include <iostream>
+#include <iostream>
 
 using namespace std;
 using namespace colibry;
 
-OptionManager::OptionManager(int argc, char* argv[])
+OptionManager::OptionManager(int argc, char* argv[]) : args_(argv,argc)
 {
-	// parse and build map
-	mandpar_ = nullptr;
-	for (int i=1; i<argc; ++i) {
-		if (argv[i][0] == '-') {
-			// option found
-			const char* arg = argv[i+1];
-			if (arg != nullptr)
-				if (*arg == '-')
-					arg = nullptr;
-			if (argv[i][1] == '-')
-				optmap_[argv[i]+2] = arg;	// exclude "--"
-			else
-				optmap_[argv[i]+1] = arg;	// exclude '-'
-			if (arg != nullptr)
+	auto getnext = [this](int& i) {
+		if (i < this->args_.size() - 1) {
+			if (this->args_[i+1][0] != '-') {
 				++i;
-		} else {
-			// mandatory parameter (just one allowed)
-			// if multiple, just the last is considered
-			mandpar_ = argv[i];
+				return string_view{this->args_[i]};
+			}
 		}
+		return string_view{};
+	};
+
+	// parse and build map
+	for (int i=1; i<args_.size(); ++i) {
+		string_view arg{args_[i]};
+		if (arg.starts_with("--"))
+			optmap_[arg.substr(2).data()] = getnext(i);
+		else if (arg.starts_with("-"))
+			optmap_[arg.substr(1).data()] = getnext(i);
+		else
+			positional_.push_back(arg);
 	}
 
-	// std::cout << "mandatory: " << (mandpar_ == nullptr ? "<empty>" : mandpar_) << std::endl;
+	// std::cout << "lonely: " << (lonely_.empty() ? "<empty>" : lonely_) << std::endl;
 	// for (auto& [option,par] : optmap_)
-	// 	std::cout << option << ": " << (par==nullptr ? "" : par) << std::endl;
+	// 	std::cout << option << ": " << (par.empty() ? "" : par) << std::endl;
 }
 
-const char* OptionManager::param(const string& o)
+string_view OptionManager::arg(const string& o) const
 {
+	if (o.empty())
+		return positional_.empty() ? string_view{} : positional_[0];
 	if (has(o))
-		return optmap_[o];
-	return nullptr;
+		return optmap_.at(o);
+	return string_view{};
+}
+
+std::string_view OptionManager::arg(const std::initializer_list<std::string>& opts) const
+{
+	for (const auto& o : opts)
+		if (has(o))
+			return optmap_.at(o);
+	return string_view{};
+}
+
+const std::vector<std::string_view>& OptionManager::pargs() const
+{
+	return positional_;
 }
 
 bool OptionManager::has(const string& opt) const
 {
-	return (optmap_.count(opt)>0);
+	return (optmap_.contains(opt));
+}
+
+std::string_view OptionManager::program() const
+{
+	return args_[0];
 }

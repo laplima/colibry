@@ -1,5 +1,5 @@
 //
-// (Simple) OptionManager
+// (Basic) OptionManager
 // (C) LAPLJ
 //
 // Build map:
@@ -11,30 +11,38 @@
 //
 //	OptionManager opt{argc, argv};
 //
-//	const char* p1 = opt.param("f");		// -f <p1>
-//	const char* p2 = opt.paran("file");		// --file <p2>
-//	if (opt.has("help")) {} 				// --help
-//
+//	string_view p1 = opt.arg("f");		// -f <p1>
+//	string_view p2 = opt.arg("file");	// --file <p2>
+//  auto p3 = opt.arg({"m","memory"});  // -m <p3> or --memory <p3>
+//	if (opt.has("help")) {} 			// --help
+//  string_view fname = opt.arg();		// first positional argument, e.g. "file.pdf"
+//  auto vec = opt.pargs();				// vector of positional arguments
 
-#ifndef __OPTIONMANAGER_H__
-#define __OPTIONMANAGER_H__
+#ifndef OPTIONMANAGER_H
+#define OPTIONMANAGER_H
 
 #include <map>
 #include <string>
+#include <span>
+#include <string_view>
+#include <vector>
+#include <initializer_list>
 
 namespace colibry {
 
 	class OptionManager {
 	public:
 		OptionManager(int argc, char* argv[]);
-		const char* param(const std::string& opt);
-		const char* mandatory() const { return mandpar_; }
-		bool has(const std::string& opt) const;    // parameter-less option
+		[[nodiscard]] std::string_view arg(const std::string& opt = "") const;	// previously, param()
+		[[nodiscard]] std::string_view arg(const std::initializer_list<std::string>& opts) const;
+		// returns a vector of postional arguments,if any
+		[[nodiscard]] const std::vector<std::string_view>& pargs() const;
+		[[nodiscard]] bool has(const std::string& opt) const;    // parameter-less option
+		[[nodiscard]] std::string_view program() const;
 	private:
-		int argc_;
-		char** argv_;
-		std::map<std::string,const char*> optmap_; // option => argv[i]
-		const char* mandpar_;		// mandatory parameter (just one)
+		std::span<char*> args_;
+		std::map<std::string, std::string_view> optmap_; // option => argv[i]
+		std::vector<std::string_view> positional_;		// positional arguments
 	};
 
 };
