@@ -16,9 +16,9 @@ ORBManager::ORBManager(int argc, char** argv, const string& orbname)
 	init(argc,argv,orbname);
 }
 
-ORBManager::ORBManager(CORBA::ORB_ptr orb) : orbname_{orb->id()}
+ORBManager::ORBManager(CORBA::ORB_ptr orb)
+	: orbname_{orb->id()}, orb_{CORBA::ORB::_duplicate(orb)}
 {
-	orb_ = CORBA::ORB::_duplicate(orb);
 }
 
 ORBManager::ORBManager(const ORBManager& om)
@@ -192,3 +192,72 @@ void ORBManager::shutdown()
 		orb_->shutdown();
 	}
 }
+
+OMPOA OMPOA::create_child_poa(
+	const std::string& name,
+	const std::vector<POAPolicy>& policies)
+{
+	CORBA::PolicyList cpolicies(policies.size());
+	cpolicies.length(policies.size());
+
+	unsigned int count = 0;
+	for (POAPolicy p : policies) {
+		switch (p) {
+			using enum POAPolicy;
+		case SYSTEM_ID:
+			cpolicies[count] = poa_->create_id_assignment_policy(PortableServer::SYSTEM_ID);
+			break;
+		case USER_ID:
+			cpolicies[count] = poa_->create_id_assignment_policy(PortableServer::USER_ID);
+			break;
+		case IMPLICIT_ACTIVATION: // default
+			cpolicies[count] = poa_->create_implicit_activation_policy(PortableServer::IMPLICIT_ACTIVATION);
+			break;
+		case NO_IMPLICIT_ACTIVATION:
+			cpolicies[count] = poa_->create_implicit_activation_policy(PortableServer::NO_IMPLICIT_ACTIVATION);
+			break;
+		case UNIQUE_ID: // default
+			cpolicies[count] = poa_->create_id_uniqueness_policy(PortableServer::UNIQUE_ID);
+			break;
+		case MULTIPLE_ID:
+			cpolicies[count] = poa_->create_id_uniqueness_policy(PortableServer::MULTIPLE_ID);
+			break;
+		case TRANSIENT: // default
+			cpolicies[count] = poa_->create_lifespan_policy(PortableServer::TRANSIENT);
+			break;
+		case PERSISTENT:
+			cpolicies[count] = poa_->create_lifespan_policy(PortableServer::PERSISTENT);
+			break;
+		case USE_ACTIVE_OBJECT_MAP_ONLY:	// default
+			cpolicies[count] = poa_->create_request_processing_policy(PortableServer::USE_ACTIVE_OBJECT_MAP_ONLY);
+			break;
+    	case USE_DEFAULT_SERVANT:
+			cpolicies[count] = poa_->create_request_processing_policy(PortableServer::USE_DEFAULT_SERVANT);
+    		break;
+    	case USE_SERVANT_MANAGER:
+			cpolicies[count] = poa_->create_request_processing_policy(PortableServer::USE_SERVANT_MANAGER);
+    		break;
+    	case RETAIN:	// default
+			cpolicies[count] = poa_->create_servant_retention_policy(PortableServer::RETAIN);
+    		break;
+    	case NON_RETAIN:
+			cpolicies[count] = poa_->create_servant_retention_policy(PortableServer::NON_RETAIN);
+    		break;
+    	case ORB_CTRL_MODEL:	// default
+			cpolicies[count] = poa_->create_thread_policy(PortableServer::ORB_CTRL_MODEL);
+    		break;
+    	case SINGLE_THREAD_MODEL:
+			cpolicies[count] = poa_->create_thread_policy(PortableServer::SINGLE_THREAD_MODEL);
+			break;
+		}
+		++count;
+	}
+
+	PortableServer::POA_ptr childpoa = poa_->create_POA(name.c_str(),poa_->the_POAManager(),cpolicies);
+
+	for (count=0; count<cpolicies.length(); ++count)
+		cpolicies[count]->destroy();
+
+	return OMPOA{childpoa};
+}
+

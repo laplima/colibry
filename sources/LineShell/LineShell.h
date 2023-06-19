@@ -97,6 +97,7 @@ namespace colibry {
 		void add_cmd(const std::string& cmd,
 			const std::string& desc,
 			int ntokens);	// number of tokens -1 in the cmd
+		void rm_cmd(const std::string& cmd, int ntokens);
 
 		static void completion(std::string_view buffer,
 			lineshell::Stringv& compls,

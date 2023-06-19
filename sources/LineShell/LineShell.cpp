@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <vector>
 #include <regex>
+#include <algorithm>
 #include "linenoise.h"
 
 using namespace colibry;
@@ -46,7 +47,7 @@ lineshell::EasyInit CmdObserver::bind()
 
 void CmdObserver::dispatch(const lineshell::Stringv& args)
 {
-	if (fmap.count(args[0]) == 0)
+	if (!fmap.contains(args[0]))
 		throw runtime_error{fmt::format("unknown command: {}", args[0])};
 	// fmap.at(args[0]).f({args.begin()+1, args.end()});
 	fmap.at(args[0]).f(args);
@@ -118,6 +119,13 @@ void LineShell::add_cmd(const string& cmd, const string& desc, int ntok)
 	// update observer
 	if (ntok == 0)
 		cobs.add(cmd, desc);
+}
+
+void LineShell::rm_cmd(const std::string& cmd, int ntok)
+{
+	auto p = std::find(std::begin(commands[ntok]), std::end(commands[ntok]), cmd);
+	if (p != std::end(commands[ntok]))
+		commands[ntok].erase(p);
 }
 
 void LineShell::cmdloop()
