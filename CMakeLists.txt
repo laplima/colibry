@@ -8,6 +8,8 @@ project(colibry_static)
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_STANDARD 20)
 
+find_package(fmt REQUIRED)
+
 set(components
     SymTable
 	Automaton
@@ -60,8 +62,7 @@ set(libnames
 	TAO_AnyTypeCode
 	TAO_CosNaming
 	TAO_IORTable
-	readline
-	fmt)
+	readline)
 
 # NO_DEFAULT_PATH prevents macos from getting readline from /usr/lib/.
 # /opt/local/lib/ is the right path
@@ -69,7 +70,7 @@ set(libnames
 
 foreach(lib ${libnames})
 	set(alib ${lib}-NOTFOUND)
-	find_library(alib ${lib} PATHS "/opt/local/lib" "/opt/local/lib/libfmt9" "$ENV{ACE_ROOT}/lib" NO_DEFAULT_PATH)
+	find_library(alib ${lib} PATHS "/opt/local/lib" "$ENV{ACE_ROOT}/lib" NO_DEFAULT_PATH)
 	find_library(alib ${lib}) # will find now if not found in the previous line
 	set(mylibs ${mylibs} ${alib})
 endforeach(lib)
@@ -78,11 +79,12 @@ endforeach(lib)
 
 # Include directories
 
-include_directories("/opt/local/include" "/opt/local/include/libfmt9"
+include_directories("/opt/local/include" "/usr/local/include"
 	"$ENV{ACE_ROOT}"
 	"$ENV{TAO_ROOT}"
 	"$ENV{TAO_ROOT}/orbsvcs"
-	${incs} "$ENV{COLIBRY}/include")
+	${incs}
+	"$ENV{COLIBRY}/include")
 
 add_compile_options(-Wno-deprecated-declarations -Wno-deprecated-builtins)
 
@@ -91,7 +93,7 @@ add_compile_options(-Wno-deprecated-declarations -Wno-deprecated-builtins)
 add_library(colibry SHARED ${sources})
 add_library(colibry_static STATIC ${sources})
 
-target_link_libraries(colibry ${mylibs})	# only dynamic
+target_link_libraries(colibry ${mylibs} fmt::fmt)
 
 # Installs
 
