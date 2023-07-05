@@ -22,7 +22,9 @@ namespace colibry {
 	class Formatter {
 	public:
 		Formatter() = default;
-		~Formatter() {}
+		virtual ~Formatter() = default;
+		Formatter(const Formatter&) = delete;
+		Formatter& operator=(const Formatter&) = delete;
 		template<typename Type>
 		Formatter& operator<<(const Type& s) { m_ss << s; return *this; }
 		std::ostringstream& get() { return m_ss; }
@@ -30,8 +32,6 @@ namespace colibry {
 		operator std::string() const { return m_ss.str(); }
 	private:
 		std::ostringstream m_ss;
-		Formatter(const Formatter&) = delete;
-		Formatter& operator=(const Formatter&) = delete;
 	};
 
 

@@ -6,8 +6,8 @@
 //
 // -------------------------------------------------
 
-#ifndef __EXCEPTION_H__
-#define __EXCEPTION_H__
+#ifndef EXCEPTION_H
+#define EXCEPTION_H
 
 #include <exception>
 #include <string>
@@ -25,38 +25,24 @@ namespace colibry {
 	class Exception : public std::exception {
 	public:
 
-		Exception() {
-			mType = 0;
-		}
-		Exception(int inType) {
-			mType = inType;
-		}
-		Exception(int inType, const std::string& inWhere) {
-			mWhere = inWhere;
-			mType = inType;
-		}
-		Exception(const std::string& inWhat) {
-			mWhat = inWhat;
-			mType = 0;
-		}
-		Exception(const std::string& inWhat, const std::string& inWhere,
-			int inType=0) {
-			mWhat = inWhat;
-			mWhere = inWhere;
-			mType = inType;
-		}
-		virtual ~Exception() throw() {};
+		Exception() = default;
+		explicit Exception(int inType) : mType{inType} {}
+		Exception(int inType, std::string inWhere)
+			: mType{inType}, mWhere{std::move(inWhere)} {}
+		Exception(std::string inWhat) : mWhat{std::move(inWhat)} {}
+		Exception(std::string inWhat, std::string inWhere, int inType=0)
+			: mType{inType}, mWhere{inWhere}, mWhat{inWhat} {}
 
 		// Local (not to be overidden...)
-		const char* what() const throw() { return mWhat.c_str(); }
-		const char* where() const throw() { return mWhere.c_str(); }
-		int type() const throw() { return mType; }
+		[[nodiscard]] const char* what() const noexcept override { return mWhat.c_str(); }
+		[[nodiscard]] const char* where() const noexcept { return mWhere.c_str(); }
+		[[nodiscard]] int type() const noexcept { return mType; }
 
 		friend std::ostream& operator<<(std::ostream& os, Exception& exc);
 
 	protected:
 
-		int mType;	     // Exception Type
+		int mType = 0;	     // Exception Type
 		std::string mWhere;  // String indicating where the exception took place
 		std::string mWhat;   // What happened
 
@@ -69,8 +55,10 @@ namespace colibry {
 
 		class Formatter {		// to allow messages in the form of streams: "ds" << 2 << ...
 		public:
-			Formatter() {}
-			virtual ~Formatter() {}
+			Formatter() = default;
+			Formatter(const Formatter&) = delete;
+			Formatter& operator=(const Formatter&) = delete;
+			virtual ~Formatter() = default;
 			template <typename T>
 			Formatter& operator<<(const T& s) { m_ss << s; return *this; }
 			std::ostringstream& get() { return m_ss; }
@@ -78,8 +66,6 @@ namespace colibry {
 			operator std::string() const { return m_ss.str(); }
 		private:
 			std::ostringstream m_ss;
-			Formatter(const Formatter&) = delete;
-			Formatter& operator=(const Formatter&) = delete;
 		};
 
 	};

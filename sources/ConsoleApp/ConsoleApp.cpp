@@ -12,7 +12,8 @@ using namespace std;
 //
 
 bool WriteAppData(fstream* file, const unsigned short max,
-				  const unsigned short curr, const colibry::DateTime* date=NULL)
+				  const unsigned short curr, 
+				  const colibry::DateTime* date=nullptr)
 {
     file->clear();
     file->seekp(0L,ios::beg);
@@ -20,7 +21,7 @@ bool WriteAppData(fstream* file, const unsigned short max,
     file->write((char*)&curr,sizeof(curr));    // curr # of executions
     *file << "-1543-9F5E-7A87-9AF7/";
     file->write((char*)&max,sizeof(max));      // max # of executions
-    if (date == NULL)
+    if (date == nullptr)
 		*file << "NEVER" << endl;
     else
 		file->write((char*)date,sizeof(*date));
@@ -40,7 +41,7 @@ bool ReadAppData(fstream* file, unsigned short* max,
     buf[5] = '\0';
     string s(buf);
     if (s == "NEVER")
-		*date = NULL;
+		*date = nullptr;
     else {
 		*date = new colibry::DateTime();
 		file->read((char*)*date,sizeof(**date));
@@ -53,40 +54,39 @@ bool ReadAppData(fstream* file, unsigned short* max,
 //
 
 colibry::ConsoleApp::ConsoleApp(int argc, char* argv[])
+	: m_exec_cnt(-1), m_expire(nullptr)
 {
-    m_exec_cnt = -1;
-    m_expire = NULL;
-
     for (int i=0; i<argc; i++)
-	m_args.push_back(argv[i]);
+		m_args.push_back(argv[i]);
     m_argc = argc;
     m_argv = argv;
 }
 
 colibry::ConsoleApp::ConsoleApp(const ArgVec& args)
+	: m_args(args), 
+	m_argc(args.size()), 
+	m_argv(nullptr), 
+	m_exec_cnt(-1), 
+	m_expire(nullptr)
 {
-    m_exec_cnt = -1;
-    m_expire = NULL;
-    m_args = args;
 }
 
 colibry::ConsoleApp::ConsoleApp(const string &inAppName)
+	: m_exec_cnt(-1), m_expire(nullptr)
 {
-    m_exec_cnt = -1;
-    m_expire = NULL;
     m_args.push_back(inAppName);
 }
 
 colibry::ConsoleApp::~ConsoleApp()
 {
-    if (m_expire != NULL)
+    if (m_expire != nullptr)
 	delete m_expire;
 }
 
 void colibry::ConsoleApp::SetExpireDate(const DateTime& ed)
 {
-    if (m_expire != NULL)
-	delete m_expire;
+    if (m_expire != nullptr)
+		delete m_expire;
 
     m_expire = new DateTime(ed);
 }
@@ -101,7 +101,7 @@ void colibry::ConsoleApp::SetTimesToRun(unsigned short ttr, const string &pfile)
 
 int colibry::ConsoleApp::Run()
 {
-    int exit_code;
+    int exit_code{};
 
     Init();
 
@@ -147,7 +147,7 @@ int colibry::ConsoleApp::Run()
 
 bool colibry::ConsoleApp::CheckDate()
 {
-    if (m_expire == NULL)
+    if (m_expire == nullptr)
 		return true;      // never expires
 
     return (*m_expire >= DateTime::Now());
@@ -222,7 +222,7 @@ void colibry::ConsoleApp::About()
 void colibry::ConsoleApp::Info()
 {
     cout << "Info" << endl;
-    if (m_expire != NULL)
+    if (m_expire != nullptr)
 	cout << "Expire date: " << *m_expire << endl;
 }
 
