@@ -2,36 +2,7 @@
 // ORBManager
 // (C) LAPLJ.
 //
-// TYPICAL USAGE:
-//
-//	SERVER
-//	----------
-//	ORBManager om{argc,argv}; // default name is "ORB"
-//	om.activate_rootpoa();
-//	T_i obji;
-//	auto obj = om.activate_object<T>(obji);	// auto = T_var
-//	cout << om.object_to_string(obj) << endl;
-//	om.run();
-//
-//	// (with <ENTER> to quit, instead of `om.run()`)
-//
-//  thread orbth{[&om]() { om.run(); }};
-//  cout << "Press ENTER to quit." << endl;
-//  cin.get();
-//  om.shutdown();
-//  orbth.join();
-//
-//	CLIENT
-//	----------
-//	ORBManager om{argc,argv};
-//	auto obj = om.string_to_object<T>("file://...."); // auto = T_var
-//
-// Notes:
-// ORBManager om;	// non-initialized om: requires late init() before use
-// om.init(argc, argv);
-//
-// ORB name is optional, but if the same name is provided, the
-// same ORB is used (unless it has been previously destroyed).
+// See README.md
 //
 
 #ifndef ORB_MANAGER_H
@@ -45,52 +16,63 @@
 namespace colibry {
 
 	enum class POAPolicy : char {
-		SYSTEM_ID, // default
+		SYSTEM_ID,					// default
 		USER_ID,
-		IMPLICIT_ACTIVATION, // default
+		IMPLICIT_ACTIVATION,		// default
 		NO_IMPLICIT_ACTIVATION,
-		UNIQUE_ID, // default
+		UNIQUE_ID,					// default
 		MULTIPLE_ID,
-		TRANSIENT, // default
+		TRANSIENT,					// default
 		PERSISTENT,
 		USE_ACTIVE_OBJECT_MAP_ONLY,	// default
 		USE_DEFAULT_SERVANT,
 		USE_SERVANT_MANAGER,
-		RETAIN,	// default
+		RETAIN,						// default
 		NON_RETAIN,
-		ORB_CTRL_MODEL,	// default
+		ORB_CTRL_MODEL,				// default
 		SINGLE_THREAD_MODEL
 	};
 
-	class ORBManager;
+	// Managed POA = MPOA
+	// TODO: use MPOA instead of plain POA in the ORBManager
 
-	// ORBManager POA
-	// TODO: use OMPOA instead of plain POA in the ORBManager
-
-	class OMPOA {
+	class MPOA {
 	public:
-		OMPOA(PortableServer::POA_ptr poa)
-			: poa_{PortableServer::POA::_duplicate(poa)} {}
-		OMPOA(const OMPOA& opoa) { *this = opoa; }
-		OMPOA& operator=(const OMPOA& opoa) {
-			poa_ = PortableServer::POA::_duplicate(opoa.poa_);
-			return *this;
-		}
-		virtual ~OMPOA() = default;
+		MPOA() : poa_{PortableServer::POA::_nil()} {}
+		explicit MPOA(PortableServer::POA_ptr poa);
+		MPOA(const MPOA& mpoa);		// copy constructor
+		MPOA(MPOA&& mpoa) noexcept; // move constructor
+		virtual ~MPOA();
+		MPOA& operator=(MPOA poam);
+		void swap(MPOA& v) noexcept;
+
+		// get underlying POA
 		[[nodiscard]] PortableServer::POA_ptr poa() { return poa_.in(); }
+		[[nodiscard]] bool is_nil() const { return CORBA::is_nil(poa_.in()); }
+
+		// get reference from an object ID (string)
 		template <typename T=CORBA::Object_ptr>
 		TAO_Objref_Var_T<T> get_reference(const std::string& id);
+
+		// register servant and get reference
 		template <typename T=CORBA::Object_ptr>
 		TAO_Objref_Var_T<T> activate_object(PortableServer::ServantBase& servant);
+
+		// register servant with an ID
 		template <typename T=CORBA::Object_ptr>
-		TAO_Objref_Var_T<T> activate_object_with_id(const std::string& id,
+		TAO_Objref_Var_T<T> activate_object_with_id(
+			const std::string& id,
 			PortableServer::ServantBase& servant);
-		OMPOA create_child_poa(
+
+		void activate();
+		MPOA create_child_poa(
 			const std::string& name,
 			const std::vector<POAPolicy>& policies);
 	private:
 		PortableServer::POA_var poa_;
 	};
+
+	// ORBManager ---------------------------------------------------
 
 	class ORBManager {
 	public:
@@ -107,7 +89,8 @@ namespace colibry {
 		ORBManager& operator=(CORBA::ORB_ptr orb);
 		ORBManager& operator=(ORBManager&&) = default;
 
-		void init(int argc, char** argv, const std::string& orbname="ORB");
+		void init(int argc, char** argv,
+			const std::string& orbname="ORB");
 		void init(const std::string& orbname="ORB");    // default args
 
 		[[nodiscard]] std::string name() const { return orbname_; }
@@ -117,24 +100,19 @@ namespace colibry {
 		void run() { orb_->run(); }
 
 		void activate_rootpoa();
-		PortableServer::POA_ptr rootpoa() { return rootpoa_.in(); }
-		PortableServer::POA_var create_child_poa(const std::string& name,
-			const std::vector<POAPolicy>& policies);
+		MPOA& rootpoa() { return rootpoa_; }
 
-		// T_var = TAO_Objref_Var_T<T>
+		// activate object in the root poa
+		// A short-hand for:
+		// auto rpoa = orbm.root_poa();
+		// rpoa.activate_object(...);
 		template<typename T=CORBA::Object_ptr>
 		TAO_Objref_Var_T<T> activate_object(PortableServer::ServantBase& servant);
-
-		template<typename T=CORBA::Object_ptr>
-		TAO_Objref_Var_T<T> activate_object_with_id(
-			PortableServer::POA_var& poa,
-			const std::string& id, PortableServer::ServantBase& servant);
 
 		std::string object_to_string(CORBA::Object_ptr obj);
 
 		template<typename T=CORBA::Object_ptr>
 		TAO_Objref_Var_T<T> string_to_object(const std::string& ior);
-		// CORBA::Object_ptr string_to_object(const std::string& ior);
 
 		template<typename T=CORBA::Object_ptr>
 		TAO_Objref_Var_T<T> bootstrap(const std::string& service);
@@ -142,16 +120,17 @@ namespace colibry {
 		void save_ior(const std::string& fname, CORBA::Object_ptr obj);
 		void shutdown();
 		[[nodiscard]] bool has_shutdown() const { return shutdown_; }
-		[[nodiscard]] bool work_pending() const { return orb_->work_pending(); }
+		[[nodiscard]] bool work_pending() const {
+			return orb_->work_pending(); }
 		void perform_work() { orb_->perform_work(); }
-	protected:
-		bool shutdown_ = false;
-		void check_init();
 
+	protected:
+
+		bool shutdown_ = false;
+		void check_init() const;
 		std::string orbname_;
 		CORBA::ORB_var orb_ = CORBA::ORB::_nil();
-		PortableServer::POA_var rootpoa_ = PortableServer::POA::_nil();
-		PortableServer::POAManager_var poamgr_ = PortableServer::POAManager::_nil();
+		MPOA rootpoa_;
 	};
 
 	//
@@ -168,22 +147,12 @@ namespace colibry {
 	template<typename T>
 	TAO_Objref_Var_T<T> /* T* */ ORBManager::activate_object(PortableServer::ServantBase& servant)
 	{
-		PortableServer::ObjectId_var oid = rootpoa_->activate_object(&servant);
-		CORBA::Object_ptr ref = rootpoa_->id_to_reference(oid.in());
-		return T::_narrow(ref);
+		return rootpoa_.activate_object<T>(servant);
 	}
 
 	template<typename T>
-	TAO_Objref_Var_T<T> ORBManager::activate_object_with_id(PortableServer::POA_var& poa, const std::string& id, PortableServer::ServantBase& servant)
-	{
-		PortableServer::ObjectId_var oid = PortableServer::string_to_ObjectId(id.c_str());
-		poa->activate_object_with_id(oid.in(),&servant);
-		CORBA::Object_ptr ref = poa->id_to_reference(oid.in());
-		return T::_narrow(ref);
-	}
-
-	template<typename T>
-	TAO_Objref_Var_T<T> /* T* */ ORBManager::string_to_object(const std::string& ior)
+	TAO_Objref_Var_T<T> /* T* */ ORBManager::string_to_object(
+		const std::string& ior)
 	{
 		check_init();
 		auto *ref = orb_->string_to_object(ior.c_str());
@@ -193,7 +162,7 @@ namespace colibry {
 	// POA
 
 	template <typename T>
-	TAO_Objref_Var_T<T> OMPOA::get_reference(const std::string& id)
+	TAO_Objref_Var_T<T> MPOA::get_reference(const std::string& id)
 	{
 		try {
 			PortableServer::ObjectId_var oid = PortableServer::string_to_ObjectId(id.c_str());
@@ -205,7 +174,8 @@ namespace colibry {
 	}
 
 	template <typename T>
-	TAO_Objref_Var_T<T> OMPOA::activate_object(PortableServer::ServantBase& servant)
+	TAO_Objref_Var_T<T> MPOA::activate_object(
+		PortableServer::ServantBase& servant)
 	{
 		PortableServer::ObjectId_var oid = poa_->activate_object(&servant);
 		CORBA::Object_ptr ref = poa_->id_to_reference(oid.in());
@@ -213,7 +183,7 @@ namespace colibry {
 	}
 
 	template <typename T>
-	TAO_Objref_Var_T<T> OMPOA::activate_object_with_id(
+	TAO_Objref_Var_T<T> MPOA::activate_object_with_id(
 		const std::string& id,
 		PortableServer::ServantBase& servant)
 	{
