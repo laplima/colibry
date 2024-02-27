@@ -8,16 +8,17 @@ project(colibry_static)
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_STANDARD 20)
 
+set(fmt_DIR "/opt/local/lib/libfmt10/cmake/fmt")
 find_package(fmt REQUIRED)
 
 set(components
     SymTable
+	Dictionary
 	Automaton
 	AutTable
 	Bag
 	ConsoleApp
 	DateTime
-	Dictionary
 	Exception
 	InteractiveShell
 	IShell
@@ -79,7 +80,8 @@ endforeach(lib)
 
 # Include directories
 
-include_directories("/opt/local/include" "/usr/local/include"
+include_directories("/opt/local/include" "/opt/local/include/libfmt10"
+	"/usr/local/include"
 	"$ENV{ACE_ROOT}"
 	"$ENV{TAO_ROOT}"
 	"$ENV{TAO_ROOT}/orbsvcs"
