@@ -1,5 +1,7 @@
 # COMMON OBJECT LIBRARY
 
+Created by Luiz Lima Jr.
+
 ## Compiling & Installing
 
 Compile with:
@@ -39,17 +41,15 @@ Compile with:
 * `Throw_if` &ndash; 
 * `XML` &ndash;
 
-For usage details and documentation, see sources.
+For usage details and documentation, see sources (header files).
 
-2018
-	- Included pkg-config file: colibry.pc (see installation instruction in colibry.pc file)
-	- Moved from plain makefiles to CMake project (makefiles are now deprecated - removed from SVN - last revision: r33).
+### External library dependencies:
 
 External library dependencies:
 
-- [GNU readline](https://tiswww.case.edu/php/chet/readline/rltop.html)
-- [ACE/TAO libs](https://download.dre.vanderbilt.edu)
-- [nlohmann/json](https://github.com/nlohmann/json)
+* [The GNU Readline Library](https://tiswww.case.edu/php/chet/readline/rltop.html)
+* [nlohmann/json](https://github.com/nlohmann/json)
+* [ACE/TAO CORBA](https://github.com/DOCGroup/ACE_TAO)
 
 ## License
 
@@ -62,3 +62,4 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+=======
