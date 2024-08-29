@@ -120,7 +120,7 @@ void colibry::cls()
 	std::cout << ESCSEQ << "2J";
 }
 
-std::vector<std::string> split(const std::string& input, const std::string& regex)
+std::vector<std::string> colibry::split(const std::string& input, const std::string& regex)
 {
 	// passing -1 as the submatch index parameter performs splitting
 	std::regex re{regex};
