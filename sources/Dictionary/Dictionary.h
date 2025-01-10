@@ -23,10 +23,17 @@
 #ifndef DICTIONARY_H
 #define DICTIONARY_H
 
+#include <cstdint>
 #include <string>
 #include <vector>
 #include <map>
 #include <cinttypes>
+#include <colibry/Bag.h>
+
+// forward declaration of friend function
+
+namespace colibry { class Dictionary; }
+void swap(colibry::Dictionary&, colibry::Dictionary&) noexcept;
 
 // Interface
 
@@ -40,40 +47,47 @@ namespace colibry {
 	public:
 
 		Dictionary();
+		Dictionary(const Dictionary& d) = default;
+		Dictionary(Dictionary&& d) noexcept;
 		virtual ~Dictionary();
+		Dictionary& operator=(Dictionary d) noexcept;
 
-		// accessors
-		virtual uint64_t operator[](const std::string& symbol);	// throw if not found
+		friend void ::swap(Dictionary& d1, Dictionary& d2) noexcept;
+		void swap(Dictionary& d) noexcept;
+
+		// accessors (symbol/index must exist)
+		virtual uint64_t operator[](const std::string& symbol);			// throw if not found
 		virtual const std::string& operator[](const uint64_t index);	// idem
 
 		// find/insert
-		virtual uint64_t LookUp(const std::string &symbol);
+		virtual uint64_t lookup(const std::string &symbol);
 
-		// Remove will not remove if search is by index
-		virtual void Remove(const uint64_t index);
-		virtual void Remove(const std::string &symbol);
-		virtual void Clear() noexcept;
+		virtual void remove(const uint64_t index);
+		virtual void remove(const std::string &symbol);
+		virtual void clear() noexcept;
 
 		// Mark/un-mark existing symbol. Throw exception, if index is invalid
-		virtual void Mark(const uint64_t index, bool marked=true);
+		virtual void mark(const uint64_t index, bool marked=true);
 
 		// Check whether symbol is marked.
-		virtual bool IsMarked(const uint64_t index) const;
+		[[nodiscard]] virtual bool is_marked(const uint64_t index) const;
 
 		// Get table size
-		auto Size() const { return m_symbols.size(); }
+		[[nodiscard]] auto size() const { return maps2i_.size(); }
 
 	private:
 
+		inline void check_index(uint64_t index) const;
+
 		struct Item {
-			Item(const std::string &s, bool mrk=false)
-				: symbol(s), marked{mrk} {}
-			const std::string& symbol;
+			Item(const std::string* s=nullptr, bool mrk=false)
+				: symbol{s}, marked{mrk} {}
+			const std::string* symbol;
 			bool marked;
 		};
-		std::map<std::string,uint64_t> m_s2i;
-		std::vector<Item> m_symbols;
-		uint64_t m_count;
+		std::map<std::string,uint64_t> maps2i_;
+		std::vector<Item> symbols_;
+		Bag<uint64_t> bag_;
 	};
 
 };

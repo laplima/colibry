@@ -1,84 +1,122 @@
 #include "Dictionary.h"
-#include <exception>
 #include <stdexcept>
 #include <algorithm>
 
-const uint64_t ALLOCATION_SZ = 4096;
+// debug
+#include <iostream>
+using std::cout;
 
-using namespace std;
+constexpr uint64_t ALLOCATION_SZ = 4096;
+
 using namespace colibry;
 
-Dictionary::Dictionary() : m_count{0}
+Dictionary::Dictionary()
 {
-	m_symbols.reserve(ALLOCATION_SZ);	// doesn't affect vector size
+	symbols_.reserve(ALLOCATION_SZ);	// doesn't affect vector size
+}
+
+Dictionary::Dictionary(Dictionary&& d) noexcept
+	: maps2i_{std::move(d.maps2i_)},
+	symbols_{std::move(d.symbols_)},
+	bag_{std::move(d.bag_)}
+{
 }
 
 Dictionary::~Dictionary()
 {
-	Clear();
+	clear();
+}
+
+Dictionary& Dictionary::operator=(Dictionary d) noexcept
+{
+	::swap(d, *this);
+	return *this;
+}
+
+void swap(colibry::Dictionary& d1, colibry::Dictionary& d2) noexcept
+{
+	d1.swap(d2);
+}
+
+void Dictionary::swap(Dictionary& d) noexcept
+{
+	using std::swap;
+	swap(d.maps2i_, maps2i_);
+	swap(d.symbols_, symbols_);
+	swap(d.bag_, bag_);
+}
+
+void Dictionary::check_index(uint64_t index) const
+{
+	if (index >= symbols_.size() || symbols_[index].symbol == nullptr)
+		throw std::out_of_range{"Invalid index"}; 
 }
 
 uint64_t Dictionary::operator[](const std::string& symbol)
 {
-	auto p = m_s2i.find(symbol);
-	if (p == m_s2i.end())
-		throw invalid_argument{"Symbol not found"};
-	return p->second;
+	// throw out-of-range if not found
+	return maps2i_.at(symbol);
 }
 
 const std::string& Dictionary::operator[](const uint64_t index)
 {
-	if (index >= m_symbols.size())
-		throw invalid_argument{"Invalid index"};
-	return m_symbols[index].symbol;
+	check_index(index);
+	return *(symbols_[index].symbol);
 }
 
-uint64_t Dictionary::LookUp(const std::string& symbol)
+uint64_t Dictionary::lookup(const std::string& symbol)
 {
-	try {
-		return (*this)[symbol];
-	} catch(const invalid_argument&) {
+	auto p = maps2i_.find(symbol);
+	if (p == maps2i_.end()) {
 		// not found -- create
-		m_s2i[symbol] = m_count;
-		m_symbols.push_back(Item{m_s2i.find(symbol)->first});
-		return m_count++;
-	}
+		auto i = bag_.get();
+		auto [it,_] = maps2i_.emplace(symbol,i);	// iterator
+		// make sure index exist in the vector
+		// (may cause memory relocation!)
+		if (symbols_.size() <= i) {
+			symbols_.resize(i+1);
+			if (i%ALLOCATION_SZ == 0 && i != 0)
+				symbols_.reserve(i+ALLOCATION_SZ);
+		}
+		symbols_[i] = Item{&(it->first)};
+		return i;
+	} else
+		return p->second;
 }
 
-void Dictionary::Remove(const uint64_t index)
+void Dictionary::remove(const uint64_t index)
 {
-	try {
-		string symbol = (*this)[index];
-		m_s2i.erase(symbol);	// just remove the map entry
-	} catch (const invalid_argument&) {
-		throw std::out_of_range{"Remove(index)"};
-	}
+	check_index(index);
+	std::string symbol = *symbols_[index].symbol;
+	// todo: change symbols_'s size...
+	symbols_[index].symbol = nullptr;
+	maps2i_.erase(symbol);
+	bag_.put_back(index);
 }
 
-void Dictionary::Remove(const std::string &symbol)
+void Dictionary::remove(const std::string &symbol)
 {
-	auto n = m_s2i.erase(symbol);
-	if (n==0)
-		throw std::invalid_argument{"Remove(symbol)"};
+	auto index = maps2i_.at(symbol);	// throw if not found
+	symbols_[index].symbol = nullptr;
+	maps2i_.erase(symbol);
+	bag_.put_back(index);
 }
 
-void Dictionary::Clear() noexcept
+void Dictionary::clear() noexcept
 {
-	m_symbols.clear();
-	m_s2i.clear();
+	symbols_.clear();
+	maps2i_.clear();
+	bag_.reset();
 }
 
-void Dictionary::Mark(const uint64_t index, bool marked)
+void Dictionary::mark(const uint64_t index, bool marked)
 {
-	// note: mark on vetor (it may not exist, if removed)
-	if (index >= m_symbols.size())
-		throw std::out_of_range{"Dictionary::Mark()"};
-	m_symbols[index].marked = marked;
+	check_index(index);
+	symbols_[index].marked = marked;
 }
 
-bool Dictionary::IsMarked(const uint64_t index) const
+bool Dictionary::is_marked(const uint64_t index) const
 {
-	if (index >= m_symbols.size())
-		throw std::out_of_range{"Dictionary::IsMarked()"};
-	return m_symbols[index].marked;
+	check_index(index);
+	return symbols_[index].marked;
 }
