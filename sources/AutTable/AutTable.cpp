@@ -8,6 +8,7 @@
 #include <fstream>
 #include <algorithm>
 //#include <cstring>
+#include <stdexcept>
 #include <typeinfo>
 #include <sstream>
 
@@ -18,10 +19,10 @@ using namespace std;
 
 // Static member
 
-SymTable AutTable::sIOT;
+//SymTable AutTable::sIOT;
+Dictionary AutTable::sIOT;
 
-
-// MACRO: Throw WRONG_FORMAT exception if pointer is NULL
+// MACRO: Throw WRONG_FORMAT exception if pointer is nullptr
 
 #define ThrowWFIfNULL(ptr)						\
     if (ptr == nullptr) {							\
@@ -40,7 +41,7 @@ inline void ThrowIfNotFound(string::size_type p, const string& filename,
 
 inline unsigned long int StrToULong(const string& s)
 {
-    return strtoul(s.c_str(),(char**)NULL,10);
+    return strtoul(s.c_str(),(char**)nullptr,10);
 }
 
 // Constructors
@@ -49,7 +50,7 @@ AutTable::AutTable(const std::uint32_t inMaxStates)
 {
     fMaxStates = inMaxStates;
 
-    fStt.resize(inMaxStates,NULL);		// Set all elements to NULL
+    fStt.resize(inMaxStates,nullptr);		// Set all elements to nullptr
     fCompTab.resize(inMaxStates);
 
     fInitState = fCurrent = 0;
@@ -115,7 +116,7 @@ AutTable::LoadFile(const string &filename)
     fMaxStates = StrToULong(aux);
 
     // Resize tables
-    fStt.resize(fMaxStates,NULL);
+    fStt.resize(fMaxStates,nullptr);
     fCompTab.resize(fMaxStates);
 
     // PARSE FILE
@@ -164,11 +165,11 @@ AutTable::LoadFile(const string &filename)
 	lout.clear();
 	p1 = out.find(" ");
 	while(p1 != string::npos) {
-	    lout.push_back(sIOT.LookUp(out.substr(0,p1)));
+	    lout.push_back(sIOT.lookup(out.substr(0,p1)));
 	    out.erase(0,p1+1);
 	    p1 = out.find(" ");
 	}
-	lout.push_back(sIOT.LookUp(out));
+	lout.push_back(sIOT.lookup(out));
 
 	// Get fs
 	p1 = line.find(")");
@@ -177,7 +178,7 @@ AutTable::LoadFile(const string &filename)
 
 	// Create transition
 	try {
-	    Add(StrToULong(is),sIOT.LookUp(in),lout,StrToULong(fs));
+	    Add(StrToULong(is),sIOT.lookup(in),lout,StrToULong(fs));
 	} catch (ExceptionAT& ae) {
 	    if (ae.type() == ExceptionAT::REPEATED) {
 		cerr << "Warning: repeated transition! (line #" << nline
@@ -217,14 +218,14 @@ AutTable::Add(const StateType is,
     if (fs > fMaxStN) fMaxStN = fs;
 
     // Create new state cell if it doesn't already exist
-    if (fStt[is] == NULL) {
+    if (fStt[is] == nullptr) {
 		fStt[is] = new StateAT;
 		fCompTab[is] = is;
 		fNSt++;
     }
 
     // Create new state cell if it doesn't already exist
-    if (fStt[fs] == NULL) {
+    if (fStt[fs] == nullptr) {
 		fStt[fs] = new StateAT;
 		fCompTab[fs] = fs;
 		fNSt++;
@@ -273,8 +274,8 @@ AutTable::Add(const StateType is,
 			   const StateType fs)
 {
     SigType ins, ous;
-	ins = sIOT.LookUp(in);
-	ous = sIOT.LookUp(out);
+	ins = sIOT.lookup(in);
+	ous = sIOT.lookup(out);
 
     list<SigType> lout;
     lout.push_back(ous);
@@ -319,13 +320,13 @@ AutTable::RemoveTr(const StateType is,
     if (fStt[is]->inl.empty() && fStt[is]->outl.empty()) {
 		// Remove state
 		delete fStt[is];
-		fStt[is] = NULL;
+		fStt[is] = nullptr;
 		fNSt--;
     }
     if (fStt[fs]->inl.empty() && fStt[fs]->outl.empty()) {
 		// Remove state
 		delete fStt[fs];
-		fStt[fs] = NULL;
+		fStt[fs] = nullptr;
 		fNSt--;
     }
 
@@ -342,8 +343,8 @@ AutTable::RemoveTr(const StateType is,
 {
     SigType ins, ous;
     try {
-		ins = sIOT.LookUp(in);
-		ous = sIOT.LookUp(out);
+		ins = sIOT.lookup(in);
+		ous = sIOT.lookup(out);
     } catch (...) {
     	// Transform memory exception in automaton exception
     	throw(ExceptionAT(ExceptionAT::INEXISTENT_TRANS,"AutTable::RemoveTr()"));
@@ -399,8 +400,8 @@ AutTable::MarkTr(const StateType is,
 {
     SigType ins, ous;
     try {
-		ins = sIOT.LookUp(in);
-		ous = sIOT.LookUp(out);
+		ins = sIOT.lookup(in);
+		ous = sIOT.lookup(out);
     } catch (...) {
     	// Transform memory exception in automaton exception
     	throw(ExceptionAT(ExceptionAT::INEXISTENT_TRANS,"AutTable::RemoveTr()"));
@@ -439,7 +440,7 @@ list<TransitionAT> *
 AutTable::GetInl(const StateType st)
 {
     if (!IsValidSt(st))
-		return NULL;
+		return nullptr;
 
     return &(fStt[st]->inl);
 }
@@ -450,7 +451,7 @@ list<TransitionAT> *
 AutTable::GetOutl(const StateType st)
 {
     if (!IsValidSt(st))
-		return NULL;
+		return nullptr;
 
     return &(fStt[st]->outl);
 }
@@ -461,9 +462,9 @@ void
 AutTable::Clear()
 {
     for (StateType i=0; i<=fMaxStN; i++)
-	if (fStt[i] != NULL) {
+	if (fStt[i] != nullptr) {
 	    delete fStt[i];
-	    fStt[i] = NULL;
+	    fStt[i] = nullptr;
 	}
 
     fInitState = fCurrent = 0;
@@ -477,7 +478,7 @@ AutTable::IsValidSt(StateType st) const
     if (st>fMaxStN)		// Will never be < 0
 		return false;
 
-    return (bool)(fStt[st] != NULL);
+    return (bool)(fStt[st] != nullptr);
 }
 
 
@@ -486,30 +487,45 @@ AutTable::IsValidSt(StateType st) const
 string
 AutTable::GetSignalName(const SigType inSigIndex)
 {
-    return sIOT.GetSymbol(inSigIndex);
+//    return sIOT.GetSymbol(inSigIndex);
+	return sIOT[inSigIndex];
 }
 
 SigType
 AutTable::GetSignalIndex(const string &inSigName)
 {
-    return sIOT.LookUp(inSigName);
+//    return sIOT.LookUp(inSigName);
+	return sIOT[inSigName];
 }
 
 bool
 AutTable::IsValidSignal(const string &inSigName)
 {
-    try {
-        sIOT.Find(inSigName);
-        return true;
-    } catch(const SymTable::not_found&) {
-        return false;
-    }
+	try {
+    	sIOT[inSigName];
+    	return true;
+	} catch (std::out_of_range&) {
+		return false;
+	}
+    // try {
+	//        sIOT.Find(inSigName);
+    //     return true;
+    // } catch(const SymTable::not_found&) {
+    //     return false;
+    // }
 }
 
 bool
 AutTable::IsValidSignal(const SigType inSignal)
 {
-	return sIOT.IsValid(inSignal);
+	try {
+    	sIOT[inSignal];
+    	return true;
+	} catch (std::out_of_range&) {
+		return false;
+	}
+
+	// return sIOT.IsValid(inSignal);
 }
 
 

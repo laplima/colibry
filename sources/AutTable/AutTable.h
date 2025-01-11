@@ -18,7 +18,8 @@
 #include <string>
 #include <vector>
 #include <list>
-#include "SymTable.h"
+//#include "SymTable.h"
+#include "Dictionary.h"
 #include "FileException.h"
 
 namespace colibry {
@@ -141,7 +142,8 @@ namespace colibry {
 
 		friend std::ostream& operator<<(std::ostream &os, const colibry::AutTable &at);
 
-		static SymTable sIOT;	        // Symbol table
+		// static SymTable sIOT;	        // Symbol table
+		static Dictionary sIOT;
 
 		std::vector<StateAT*> fStt;	// State table vector
 		std::vector<StateType> fCompTab;	        // Compress table
