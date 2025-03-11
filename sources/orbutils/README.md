@@ -3,27 +3,37 @@
 ### SERVER
 
 ```c++
-ORBManager om{argc,argv}; // default name is "ORB"
-om.activate_rootpoa();
-Object_i obji;
-auto ref = om.activate_object<Object>(obji);	// auto = T_var
-cout << om.object_to_string(ref) << endl;
-om.run();
+try {
+    ORBManager om{argc,argv}; // default name is "ORB"
+    om.activate_rootpoa();
+    Object_i obji;
+    auto ref = om.activate_object<Object>(obji);	// auto = T_var
+    
+    // publish IOR
+    fmt::print("{}\n",om.object_to_string(ref));
 
-// (with <ENTER> to quit, instead of `om.run()`)
+	om.run();
+} catch (const CORBA::Exception& e) {
+    fmt::print(stderr, "ERROR: {}\n", fmt::streamed(e));
+}
 
- thread orbth{[&om]() { om.run(); }};
- cout << "Press ENTER to quit." << endl;
- cin.get();
- om.shutdown();	// end CORBA event loop in the thread
- orbth.join();
+    // (with <ENTER> to quit, instead of `om.run()`)
+    thread orbth{[&om]() { om.run(); }};
+    fmt::print("Press ENTER to quit.\n");
+    cin.get();
+    om.shutdown();	// end CORBA event loop in the thread
+    orbth.join();
 ```
 ### CLIENT
 
 ```c++
-ORBManager om{argc,argv};
-auto ref = om.string_to_object<T>("file://...."); // auto = T_var
-ref->remote_method();
+try {
+    ORBManager om{argc,argv};
+    auto ref = om.string_to_object<T>("file://...."); // auto = T_var
+    ref->remote_method();
+} catch (const CORBA::Exception& e) {
+    fmt::print(stderr, "ERROR: {}\n", fmt::streamed(e));
+}
 ```
 
 ### Server with a child POA

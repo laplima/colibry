@@ -81,7 +81,6 @@ endforeach(lib)
 # Include directories
 
 include_directories("/opt/local/include"
-	"/opt/local/include/libfmt10"
 	"/usr/local/include"
 	"$ENV{ACE_ROOT}"
 	"$ENV{TAO_ROOT}"
@@ -97,6 +96,7 @@ add_library(colibry SHARED ${sources})
 add_library(colibry_static STATIC ${sources})
 
 target_link_libraries(colibry ${mylibs} fmt::fmt)
+target_link_libraries(colibry_static ${mylibs} fmt::fmt)
 
 # Installs
 
