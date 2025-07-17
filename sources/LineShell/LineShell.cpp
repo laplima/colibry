@@ -4,6 +4,8 @@
 #include <vector>
 #include <regex>
 #include <algorithm>
+#include <format>
+#include <print>
 #include "linenoise.h"
 
 using namespace colibry;
@@ -48,7 +50,7 @@ lineshell::EasyInit CmdObserver::bind()
 void CmdObserver::dispatch(const lineshell::Stringv& args)
 {
 	if (!fmap.contains(args[0]))
-		throw runtime_error{fmt::format("unknown command: {}", args[0])};
+		throw runtime_error{std::format("unknown command: {}", args[0])};
 	// fmap.at(args[0]).f({args.begin()+1, args.end()});
 	fmap.at(args[0]).f(args);
 }
@@ -56,7 +58,7 @@ void CmdObserver::dispatch(const lineshell::Stringv& args)
 void CmdObserver::help(const lineshell::Stringv& /*unused*/)
 {
 	for (const auto& [cmd, cdata] : fmap)
-		fmt::print("{:>10} :  {}\n", cmd, cdata.description);
+		std::print("{:>10} :  {}\n", cmd, cdata.description);
 }
 
 void CmdObserver::exit_(const lineshell::Stringv& /*unused*/)
@@ -143,9 +145,9 @@ void LineShell::cmdloop()
 			cobs.dispatch(cmdline);
 			linenoise::AddHistory(cmd.c_str());
 		} catch(const std::runtime_error& e) {
-			fmt::print(stderr, "{}\n", e.what());
+			std::print(stderr, "{}\n", e.what());
 		} catch (const std::bad_function_call&) {
-			fmt::print(stderr, "no function bound to command \"{}\"\n", cmdline[0]);
+			std::print(stderr, "no function bound to command \"{}\"\n", cmdline[0]);
 		}
 	}
 	linenoise::SaveHistory("history.txt");
@@ -159,7 +161,7 @@ void lineshell::PersistenceManager::load_file(
 {
 	std::ifstream input{fpath};
 	if (!input)
-		throw std::runtime_error{fmt::format(R"(file "{}" not found)",
+		throw std::runtime_error{std::format(R"(file "{}" not found)",
 			fpath.string())};
 	json ctree;		// command tree
 	input >> ctree;
@@ -195,7 +197,7 @@ void lineshell::PersistenceManager::build_command(
 {
 	const auto& first = cmdj.items().begin();
 	string cmdstr = (prefix.empty() ?
-		first.key() : fmt::format("{} {}", prefix, first.key()));
+		first.key() : std::format("{} {}", prefix, first.key()));
 	string helpstr = first.value()["desc"].get<string>();
 	try {
 		cmds.at(ntok).push_back({ cmdstr, helpstr });

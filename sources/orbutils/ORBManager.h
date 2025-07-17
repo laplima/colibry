@@ -137,6 +137,8 @@ namespace colibry {
 	// --- template implementations
 	//
 
+	// ORBManager
+
 	template<typename T>
 	TAO_Objref_Var_T<T> ORBManager::bootstrap(const std::string& service)
 	{

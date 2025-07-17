@@ -6,7 +6,7 @@ project(colibry)
 project(colibry_static)
 
 set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 26)
 
 # set(fmt_DIR "/opt/local/lib/libfmt10/cmake/fmt")
 find_package(fmt REQUIRED)

@@ -2,7 +2,7 @@
 
 ## A command-line completer/interpreter based on linenoise
 
-Important: `fmt` library is required in order to compile
+Using STL format+print libraries (C++23 required).
 
 ### Define observer class
 

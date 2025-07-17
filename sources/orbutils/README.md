@@ -42,7 +42,7 @@ try {
 ORBManager orb{argc,argv};
 orb.activate_rootpoa();
 
-MPOA rpoa = orb.root_poa();
+MPOA& rpoa = orb.root_poa();	// todo: use &?
 MPOA cpoa = rpoa.create_child_poa("cpoa", {POAPolicy::USER_ID,
                                POAPolicy::NO_IMPLICIT_ACTIVATION});
 Object_i obj;

@@ -20,7 +20,7 @@
 #include <fstream>
 #include <filesystem>
 #include <stdexcept>
-#include <fmt/format.h>
+// #include <format>
 #include <nlohmann/json.hpp>
 
 #define FWRAP(fn) [this](const std::vector<std::string>& a) { this->fn(a); }

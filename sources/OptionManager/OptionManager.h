@@ -33,6 +33,7 @@ namespace colibry {
 	class OptionManager {
 	public:
 		OptionManager(int argc, char* argv[]);
+        // returns empty string, if not found
 		[[nodiscard]] std::string_view arg(const std::string& opt = "") const;	// previously, param()
 		[[nodiscard]] std::string_view arg(const std::initializer_list<std::string>& opts) const;
 		// returns a vector of postional arguments,if any
