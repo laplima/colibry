@@ -24,7 +24,7 @@ namespace colibry {
 	public:
 
 		NameServer() = default;				// delayed orb initialization
-		NameServer(ORBManager& om);			// om must have been initiated
+		NameServer(const ORBManager& om);			// om must have been initiated
 		NameServer(CORBA::ORB_ptr orb);		// orb must have been initiated
 		NameServer(const NameServer&) = delete;
 		NameServer(NameServer&&) = default;
@@ -32,7 +32,7 @@ namespace colibry {
 		NameServer& operator=(NameServer&&) = delete;
 		virtual ~NameServer() noexcept;
 
-		void use_orb(ORBManager& om);		// om must have been initiated
+		void use_orb(const ORBManager& om);		// om must have been initiated
 		void use_orb(CORBA::ORB_ptr orb);	// orb must be initiated
 
 		template<typename T>

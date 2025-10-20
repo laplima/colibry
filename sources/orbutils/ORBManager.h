@@ -95,7 +95,7 @@ namespace colibry {
 
 		[[nodiscard]] std::string name() const { return orbname_; }
 		[[nodiscard]] bool initiated() const;
-		CORBA::ORB_ptr orb() { return orb_.in(); }
+		[[nodiscard]] CORBA::ORB_ptr orb() const { return orb_.in(); }
 
 		void run() { orb_->run(); }
 

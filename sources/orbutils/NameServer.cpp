@@ -8,18 +8,16 @@
 using namespace std;
 using namespace colibry;
 
-// helper
-
-vector<string> cosplit(const string& input)
-{
-	regex re{"/"};
-	sregex_token_iterator first{input.begin(), input.end(), re, -1};
-	sregex_token_iterator last;
-	return {first, last};
-}
 
 CosNaming::Name StringToName(const string& name)
 {
+	auto cosplit = [](const string& input) {
+		regex re{"/"};
+		sregex_token_iterator first{input.begin(), input.end(), re, -1};
+		sregex_token_iterator last;
+		return vector<string>{first, last};
+	};
+
 	auto vs = cosplit(name);
 
 	CosNaming::Name nm(vs.size());
@@ -39,13 +37,13 @@ NameServer::NameServer(CORBA::ORB_ptr orb)
 	init_ns_ref();
 }
 
-NameServer::NameServer(ORBManager& om)
+NameServer::NameServer(const ORBManager& om)
 {
 	use_orb(om);
 	init_ns_ref();
 }
 
-void NameServer::use_orb(ORBManager& om)
+void NameServer::use_orb(const ORBManager& om)
 {
 	orb_ = CORBA::ORB::_duplicate(om.orb());
 }
