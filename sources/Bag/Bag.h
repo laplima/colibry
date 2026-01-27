@@ -46,10 +46,10 @@ namespace colibry {
 
 		T get();
 		void put_back(T i);
-
         void reset();   // restore original range
 
 		[[nodiscard]] bool empty() const;
+		[[nodiscard]] size_t size() const;	// # of items in the bag
 		void randomize(bool r=true);
 
 		T lower() const { return range_.lower; }
@@ -87,6 +87,7 @@ namespace colibry {
 			Range() = default;
 			Range(T lo, T up) : lower{lo}, upper{up} {}
 			[[nodiscard]] bool empty() const { return (lower > upper); }
+			[[nodiscard]] size_t size() const { return empty() ? 0 : static_cast<size_t>(upper-lower+1); }
 			bool contains(T i) const { return (i >= lower && i <= upper); }
 			friend std::ostream& operator<<(std::ostream& os, const Range& r) {
 				return (os << "[" << r.lower << "," << r.upper << "]");
@@ -103,8 +104,6 @@ namespace colibry {
 				return is;
 			}
 		};
-
-	protected:
 
 		Range range_;					// range to take items from
 		std::list<Range> available_;	// ranges of available items
@@ -206,7 +205,7 @@ namespace colibry {
 			std::uniform_int_distribution<T> ut(it->lower,it->upper);
 			id = ut(gen);
 			// split it range
-			Range previnter{it->lower,id-1};	// before it
+			Range previnter{it->lower,static_cast<T>(id-1)};	// before it
 			it->lower = id+1;
 			if (!previnter.empty())
 				available_.insert(it,previnter); // insert before it
@@ -258,7 +257,7 @@ namespace colibry {
 				// after the last range
 				if (available_.back().upper >= i)
 					throw std::invalid_argument{"put_back(): already in bag"};
-				else if (available_.back().upper == i-1)
+				if (available_.back().upper == i-1)
 					++(available_.back().upper);
 				else
 					available_.push_back(Range{i,i}); 	// at the end
@@ -273,7 +272,7 @@ namespace colibry {
 				};
 				if (ant->upper >= i)
 					throw std::invalid_argument{"put_back(): already in bag"};
-				else if (it->lower == i+1) {
+				if (it->lower == i+1) {
 					--(it->lower);
 					try_merge(ant,it);
 				} else if (ant->upper == i-1) {
@@ -293,6 +292,18 @@ namespace colibry {
 	bool Bag<T>::empty() const
 	{
 		return (bool)(available_.empty());
+	}
+
+	template<typename T>
+	size_t Bag<T>::size() const
+	{
+		if (empty())
+			return 0;
+		// count all available items
+		size_t sz = 0;
+		for (const auto& r : available_)
+			sz += r.size();
+		return sz;
 	}
 
 	template<typename T>

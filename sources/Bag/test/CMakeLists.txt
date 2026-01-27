@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.30 FATAL_ERROR)
 
 project(bag_test)
 
-set(sources test.cpp)
+set(sources tests.cpp)
 
 set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_BUILD_TYPE Debug)
