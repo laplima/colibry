@@ -8,8 +8,8 @@ project(colibry_static)
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_STANDARD 26)
 
-# set(fmt_DIR "/opt/local/lib/libfmt10/cmake/fmt")
-find_package(fmt REQUIRED)
+# find_package(fmt REQUIRED)
+find_package(Catch2 3 REQUIRED)    # for testing
 
 set(components
     SymTable
@@ -96,8 +96,8 @@ add_compile_options(-Wno-deprecated-declarations -Wno-deprecated-builtins
 add_library(colibry SHARED ${sources})
 add_library(colibry_static STATIC ${sources})
 
-target_link_libraries(colibry ${mylibs} fmt::fmt)
-target_link_libraries(colibry_static ${mylibs} fmt::fmt)
+target_link_libraries(colibry ${mylibs} Catch2::Catch2WithMain)
+target_link_libraries(colibry_static ${mylibs} Catch2::Catch2WithMain)
 
 # Installs
 
