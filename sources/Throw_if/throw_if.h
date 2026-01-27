@@ -36,7 +36,7 @@ namespace colibry {
 
 
 	template <typename E = std::runtime_error>
-	inline void assert_throw(bool cond, const std::string& what)
+	inline void assert_t(bool cond, const std::string& what)
 	{
 		if (!cond) throw E{what};
 	}
