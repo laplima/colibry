@@ -56,6 +56,7 @@ namespace colibry {
 	class CmdObserver {
 	public:
 		CmdObserver();
+		virtual ~CmdObserver() = default;
 		void add(std::string cmd, std::string h);
 		void stop() { running_ = false; }	// exit
 		[[nodiscard]] bool running() const { return running_; }

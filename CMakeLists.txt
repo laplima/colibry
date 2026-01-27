@@ -88,7 +88,8 @@ include_directories("/opt/local/include"
 	${incs}
 	"$ENV{COLIBRY}/include")
 
-add_compile_options(-Wno-deprecated-declarations -Wno-deprecated-builtins)
+add_compile_options(-Wno-deprecated-declarations -Wno-deprecated-builtins
+	-Wall -Wextra -Wshadow)
 
 # Libraries
 
