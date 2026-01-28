@@ -1,22 +1,29 @@
 #include <iostream>
 #include <string>
-#include <colibry/throw_if.h>
+#include <stdexcept>
+#include "../throw_if.h"
+#include <catch2/catch_test_macros.hpp>
 
 using namespace std;
 using namespace colibry;
 
-class MyException : public runtime_error {
+class MyException {
 public:
-	MyException(const string& w) : runtime_error{w} {}
+	MyException(const string& w) : what_{w} {}
+	string what() const { return what_; }
+private:
+	string what_;
 };
 
-int main(int argc, char* argv[])
-{
-	try {
-		int x = 1;
+class E2 : public runtime_error {
+public:
+	E2(const string& w) : runtime_error{w} {}
+};
 
-		throwif<MyException>(x>0,"HI");	// doesn't work
-	} catch (const MyException& e) {
-		cout << e.what() << endl;
-	}
+TEST_CASE("throwif testings", "[tif]")
+{
+	REQUIRE_NOTHROW(throwif(false, "This won't throw"));
+	REQUIRE_THROWS_AS(throwif(true, "This will throw"), std::runtime_error);
+	REQUIRE_THROWS_AS(throwif<E2>(true,"problem"), E2);
+	REQUIRE_THROWS_AS(require<logic_error>(false,"assert failed"), logic_error);
 }

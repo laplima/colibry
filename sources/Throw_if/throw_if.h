@@ -14,8 +14,10 @@
 #define THROW_IF_H
 
 #include <string>
+#include <exception>
 #include <stdexcept>
 #include <sstream>
+#include <concepts>
 
 namespace colibry {
 
@@ -34,14 +36,25 @@ namespace colibry {
 		std::ostringstream m_ss;
 	};
 
+	template<class E>
+	concept IsException = std::derived_from<E,std::exception> 
+		&& requires (char* s) { E(s); };
 
-	template <typename E = std::runtime_error>
+	template <IsException E = std::runtime_error>
 	inline void assert_t(bool cond, const std::string& what)
 	{
 		if (!cond) throw E{what};
 	}
 
-	template <typename E = std::runtime_error>
+	// require == assert_t
+
+	template <IsException E = std::runtime_error>
+	inline void require(bool cond, const std::string& what)
+	{
+		if (!cond) throw E{what};
+	}
+
+	template <IsException E = std::runtime_error>
 	inline void throwif(bool cond, const std::string& what)
 	{
 		if (cond) throw E{what};
