@@ -1,7 +1,9 @@
 #ifndef TEXTTOOLS_H
 #define TEXTTOOLS_H
 
+#include <iterator>
 #include <string>
+#include <sstream>
 #include <vector>
 
 namespace colibry {
@@ -33,6 +35,24 @@ namespace colibry {
 
 	std::vector<std::string> split(const std::string& input,
 		const std::string& regex = "\\s+");
+
+	template <typename Range, typename Value = typename Range::value_type>
+	std::string join(Range const& elements, const char *const delimiter)
+	{
+	    std::ostringstream os;
+	    auto b = begin(elements);
+	    auto e = end(elements);
+
+	    if (b != e) {
+	        std::copy(b, prev(e), std::ostream_iterator<Value>(os, delimiter));
+	        b = prev(e);
+	    }
+	    if (b != e) {
+	        os << *b;
+	    }
+
+	    return os.str();
+	}
 }; // namespace
 
 #endif
