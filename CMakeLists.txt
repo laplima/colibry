@@ -1,7 +1,7 @@
 #
 # (C) 2018-20 by LAPLJ
 #
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.25)
 project(colibry)
 project(colibry_static)
 
@@ -88,8 +88,13 @@ include_directories("/opt/local/include"
 	${incs}
 	"$ENV{COLIBRY}/include")
 
-add_compile_options(-Wno-deprecated-declarations -Wno-deprecated-builtins
-	-Wall -Wextra -Wshadow)
+add_compile_options(
+    -Wno-deprecated-declarations -Wno-deprecated-builtins
+    -Wall
+    # -Wextra
+    # -Wshadow
+    # -Wconversion
+)
 
 # Libraries
 

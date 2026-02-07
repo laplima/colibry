@@ -56,9 +56,10 @@ unique_ptr<InteractiveShell> InteractiveShell::s_pinstance;
 
 InteractiveShell* InteractiveShell::Instance()
 {
-    if (!s_pinstance)
+    if (!s_pinstance) {
     	// s_pinstance = make_unique<InteractiveShell>();
     	s_pinstance.reset(new InteractiveShell());
+    }
 	return s_pinstance.get();
 }
 

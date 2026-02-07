@@ -153,7 +153,8 @@ namespace colibry {
 	class InteractiveShell {
 	public:
 		static InteractiveShell* Instance(); // obtain obj pointer (singleton)
-		// virtual ~InteractiveShell();
+		// virtual destructor was commented-out. Why??
+		virtual ~InteractiveShell() = default;
 
 		virtual void SetCtx(void* ctx) { m_context = ctx; }
 		virtual void SetArg0Options(const std::string& cmd, const Arguments& opts);

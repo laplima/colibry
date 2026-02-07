@@ -515,7 +515,7 @@ void UServerSocket::init(Port_t port, const std::string& ip)
 	servaddr.sin_addr.s_addr = ip.empty() ? htonl(INADDR_ANY) : inet_addr(ip.c_str());
 	servaddr.sin_port = htons(port);
 
-	unsigned int yes = 1;
+	// unsigned int yes = 1;
 	//setsockopt(m_usockfd,SOL_SOCKET, SO_REUSEADDR,&yes,sizeof(yes));
 
 	int err = ::bind(m_usockfd,(struct sockaddr*)&servaddr,SZ);

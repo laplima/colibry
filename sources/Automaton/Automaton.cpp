@@ -538,28 +538,24 @@ void Automaton::ReadFile(const string &file_name)
     Line line;
     StateType is, fs;
     char *aux, *in, *out;
-    uint32_t ln = 1;
+//    uint32_t ln = 1;
 
     // Get automaton description (1st line)
     file.getline(line,MAXLINELEN);
     in = ::strchr(line,'(');
     throw_if(in == nullptr, "WRONG_FORMAT");
-    // ThrowWFIfNULL(in);
-    in++;
+    ++in;
     aux = ::strchr(in,',');
     throw_if(aux == nullptr, "WRONG_FORMAT");
-    // ThrowWFIfNULL(aux);
     *aux = '\0';
     StateType initialState = ::strtoul(in, (char**)nullptr, 10);
     // Ignore # of transitions
     // Get # of states
     in = ::strrchr(++aux,',');
     throw_if(in == nullptr, "WRONG_FORMAT");
-    // ThrowWFIfNULL(in);
-    in++;
+    ++in;
     aux = ::strchr(in,')');
     throw_if(aux == nullptr, "WRONG_FORMAT");
-    // ThrowWFIfNULL(aux);
     *aux = '\0';
 
     mStVec.reserve(::strtoul(in, (char**)nullptr, 10)+1);		// Expected number of states
@@ -569,34 +565,30 @@ void Automaton::ReadFile(const string &file_name)
     	if (line[0] == '\0' || line[0] == '#' || (::strncmp(line,"//",2)==0)) {
     	    // Discard empty lines instead of throwing exception
     	    // Allow comments (starting with '#' or with '//')
-    	    ln++;
+//    	    ln++;
     	    continue;
     	}
     	aux = strchr(line,'(');
         throw_if(aux == nullptr, "WRONG_FORMAT");
-    	// ThrowWFIfNULL(aux);
-    	aux++;
+    	++aux;
     	in = strchr(line,',');
         throw_if(in == nullptr, "WRONG_FORMAT");
-    	// ThrowWFIfNULL(in);
     	*(in++) = '\0';
     	is = strtoul(aux, (char**)nullptr, 10);
 
     	// Find last comma
     	aux=strrchr(in,',');
         throw_if(aux == nullptr, "WRONG_FORMAT");
-    	// ThrowWFIfNULL(aux);
     	fs = strtoul(aux+1, (char**)nullptr, 10);
     	*(aux-1) = '\0';
-    	in++;
+    	++in;
     	aux = strchr(in,'/');
         throw_if(aux == nullptr, "WRONG_FORMAT");
-    	// ThrowWFIfNULL(aux);
     	out = aux+1;
     	*aux = '\0';
 
     	Add(is,in,out,fs);
-    	ln++;
+//    	ln++;
     }
 
     mInitialState = mCurrState = mStVec[initialState];

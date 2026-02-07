@@ -8,12 +8,12 @@
 //
 // Declaration:
 //
-// 		Property<Test,int,'a'> prop;
+// 		Property<Test,int,PropType::rdwr> prop;
 //
 // Possible types:
-// 		- 'r' = read-only
-//		- 'w' = write-only
-//		- 'a' = read+write
+// 		- PropType::rd = read-only
+//		- PropType::wr = write-only
+//		- PropType::rdwr = read+write
 //
 // Setup:
 //
@@ -44,7 +44,7 @@ namespace colibry {
 	// PropException
 	//
 
-	class PropException : std::runtime_error {
+	class PropException : public std::runtime_error {
 	public:
 		PropException(const std::string& w) : std::runtime_error{w} {}
 	};
@@ -53,21 +53,19 @@ namespace colibry {
 	// Property
 	//
 
-	template<typename Container, typename ValueType, char PropType>
+	enum class PropType : char { rd, wr, rdwr };
+
+	template<typename Container, typename ValueType, PropType PropType=PropType::rdwr>
 	class Property {
 	public:
 		Property() : _cobj(nullptr), _get(nullptr), _set(nullptr)
-		{
-			if (PropType != 'r' && PropType != 'w' && PropType != 'a')
-				throw PropException("Invalid property type (only 'r', 'w' or 'a' are allowed)");
-		}
+		{}
 
-		Property(Container* cObject, ValueType(Container::*pGet)() const,
+		Property(Container* cObject,
+			ValueType(Container::*pGet)() const,
 			void (Container::*pSet)(const ValueType))
 		: _cobj(cObject), _get(nullptr), _set(nullptr)
 		{
-			if (PropType != 'r' && PropType != 'w' && PropType != 'a')
-				throw PropException("Invalid property type (only 'r', 'w' or 'a' are allowed)");
 			setter(pSet);
 			getter(pGet);
 		}
@@ -79,35 +77,43 @@ namespace colibry {
 
 		void setter(void (Container::*pSet)(const ValueType value))
 		{
-			if ((PropType == 'w') || (PropType == 'a'))
+			if ((PropType == PropType::wr) || (PropType == PropType::rdwr))
 				_set = pSet;
 		}
 
 		void getter(ValueType(Container::*pGet)() const)
 		{
-			if ((PropType == 'r') || (PropType == 'a'))
+			if ((PropType == PropType::rd) || (PropType == PropType::rdwr))
 				_get = pGet;
 		}
 
-		ValueType operator=(const ValueType value)
+		// ValueType operator=(const ValueType value)
+		// {
+		// 	if (_cobj == nullptr) throw PropException{"No property container"};
+		// 	if (_set == nullptr) throw PropException{"No property setter"};
+		// 	(_cobj->*_set)(value);
+		// 	return value;
+		// }
+
+		Property& operator=(const ValueType value)
 		{
-			if (_cobj == nullptr) throw PropException("No property container");
-			if (_set == nullptr) throw PropException("No property setter");
+			if (_cobj == nullptr) throw PropException{"No property container"};
+			if (_set == nullptr) throw PropException{"No property setter"};
 			(_cobj->*_set)(value);
-			return value;
+			return *this;
 		}
 
-	operator ValueType() const // cast to internal type
-	{
-		if (_cobj == nullptr) throw PropException("No property container");
-		if (_get == nullptr) throw PropException("No property getter");
-		return (_cobj->*_get)();
-	}
-private:
-	Container* _cobj;  // pointer to the module that contains the property
-	void (Container::*_set)(const ValueType value); // ptr to set member function
-	ValueType (Container::*_get)() const; // ptr to get member function
-};
+		operator ValueType() const // cast to internal type
+		{
+			if (_cobj == nullptr) throw PropException("No property container");
+			if (_get == nullptr) throw PropException("No property getter");
+			return (_cobj->*_get)();
+		}
+	private:
+		Container* _cobj;  // pointer to the module that contains the property
+		ValueType (Container::*_get)() const; // ptr to get member function
+		void (Container::*_set)(const ValueType value); // ptr to set member function
+	};
 
 };
 
