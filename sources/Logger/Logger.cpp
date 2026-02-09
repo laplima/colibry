@@ -9,19 +9,19 @@ string ToString(LogLevel level)
 {
 	switch (level) {
 		case LogLevel::ERROR:
-			return string("ERROR");
+			return {"ERROR"};
 		case LogLevel::WARNING:
-			return string("WARNING");
+			return {"WARNING"};
 		case  LogLevel::INFO:
-			return string("INFO");
+			return {"INFO"};
 		case  LogLevel::DEBUG0:
-			return string("DEBUG-0");
+			return {"DEBUG-0"};
 		case  LogLevel::DEBUG1:
-			return string("DEBUG-1");
+			return {"DEBUG-1"};
 		case  LogLevel::DEBUG2:
-			return string("DEBUG-2");
+			return {"DEBUG-2"};
 		case  LogLevel::DEBUG3:
-			return string("DEBUG-3");
+			return {"DEBUG-3"};
 	    }
 }
 
@@ -37,14 +37,14 @@ ostringstream& Logger::get(LogLevel level)
 }
 
 LogLevel Logger::s_reportinglevel = LogLevel::DEBUG0;
-Logger::OutItem Logger::s_outmap[7] = {
-    { LogLevel::ERROR, &cerr },
-    { LogLevel::WARNING, &cerr },
-    { LogLevel::INFO, &cout },
-    { LogLevel::DEBUG0, &cout },
-    { LogLevel::DEBUG1, &cout },
-    { LogLevel::DEBUG2, &cout },
-    { LogLevel::DEBUG3, &cout }
+std::array<Logger::OutItem,7> Logger::s_outmap = {
+    OutItem{ .level=LogLevel::ERROR, .os=&cerr },
+    OutItem{ .level=LogLevel::WARNING, .os=&cerr },
+    OutItem{ .level=LogLevel::INFO, .os=&cout },
+    OutItem{ .level=LogLevel::DEBUG0, .os=&cout },
+    OutItem{ .level=LogLevel::DEBUG1, .os=&cout },
+    OutItem{ .level=LogLevel::DEBUG2, .os=&cout },
+    OutItem{ .level=LogLevel::DEBUG3, .os=&cout }
 };
 
 bool Logger::s_disable_ts = false;
@@ -56,15 +56,14 @@ LogLevel& Logger::ReportingLevel()
 
 ostream*& Logger::Stream(LogLevel level)
 {
-	for (unsigned int i=0; i<7; i++)
-		if (level == s_outmap[i].level)
-			return s_outmap[i].os;
+	for (auto& om : s_outmap)
+		if (level == om.level)
+			return om.os;
 	return s_outmap[0].os;
 }
 
 Logger::~Logger()
 {
     ostream* out = Stream(m_currlevel);
-    (*out) << m_ss.str() << endl;
+    (*out) << m_ss.str() << '\n';
 }
-

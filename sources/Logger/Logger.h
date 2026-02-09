@@ -26,6 +26,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <array>
 
 namespace colibry {
 
@@ -41,18 +42,18 @@ namespace colibry {
 
 	class Logger {
 	public:
-		Logger() {}
+		Logger() = default;
+		Logger(const Logger&) = delete;
 		virtual ~Logger();
 		std::ostringstream& get(LogLevel level=LogLevel::INFO);
-	public:
+
 		static LogLevel& ReportingLevel();
 		static std::ostream*& Stream(LogLevel level);
-		static inline void ToggleTimestamp() { s_disable_ts = !s_disable_ts; }
+		static void ToggleTimestamp() { s_disable_ts = !s_disable_ts; }
 	protected:
 		std::ostringstream m_ss;
 		LogLevel m_currlevel;
 	private:
-		Logger(const Logger&) {}
 		Logger& operator=(const Logger& l) { return *this; }
 		static LogLevel s_reportinglevel;
 
@@ -60,8 +61,8 @@ namespace colibry {
 			LogLevel level;
 			std::ostream* os;
 		};
-		static OutItem s_outmap[7];
-		static bool s_disable_ts;		// disable timestamp? (default = false)
+		static std::array<OutItem,7> s_outmap;
+		static bool s_disable_ts; // disable timestamp? (default = false)
     }; // Logger class
 
 #define SET_REPORTING_LEVEL(level)	Logger::ReportingLevel() = LogLevel::level

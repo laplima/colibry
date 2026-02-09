@@ -4,6 +4,7 @@
 //
 
 #include "Sockets.h"
+#include <algorithm>
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
@@ -121,7 +122,9 @@ Socket& Socket::operator=(const Socket& sock)
 void Socket::Connect(const char* host, unsigned short portn)
 {
 	// new way (2020)
-	struct addrinfo hint, *servinfos, *info;
+	struct addrinfo hint;
+	struct addrinfo *servinfos = nullptr;
+	struct addrinfo *info = nullptr;
 	memset(&hint, 0, sizeof hint);
 	hint.ai_family = AF_INET;		// IPv4
 	hint.ai_socktype = SOCK_STREAM;	// TCP
@@ -432,8 +435,7 @@ void SocketSelector::UpdateMaxFD()
 
 	// is map sorted? get the last
 	for (it = m_socks.begin(); it != m_socks.end(); it++)
-		if (it->first > m_maxfd)
-			m_maxfd = it->first;
+		m_maxfd = std::max<int>(it->first, m_maxfd);
 }
 
 void SocketSelector::Clear()

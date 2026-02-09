@@ -1,9 +1,9 @@
 #
-# (C) 2018-20 by LAPLJ
+# (C) 2018-26 by LAPLJ
 #
 cmake_minimum_required(VERSION 3.25)
+
 project(colibry)
-project(colibry_static)
 
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_STANDARD 26)
@@ -45,9 +45,9 @@ set(incs)
 foreach(comp ${components})
 	file(GLOB hfiles "sources/${comp}/*.h")
 	file(GLOB sfiles "sources/${comp}/*.cpp")
-	set(headers ${headers} ${hfiles})
-	set(sources ${sources} ${sfiles})
-	set(incs ${incs} "sources/${comp}")
+	list(APPEND headers ${hfiles})
+	list(APPEND sources ${sfiles})
+	list(APPEND incs "sources/${comp}")
 endforeach(comp)
 
 #message("headers = ${headers}")
@@ -73,7 +73,7 @@ foreach(lib ${libnames})
 	set(alib ${lib}-NOTFOUND)
 	find_library(alib ${lib} PATHS "/opt/local/lib" "$ENV{ACE_ROOT}/lib" NO_DEFAULT_PATH)
 	find_library(alib ${lib}) # will find now if not found in the previous line
-	set(mylibs ${mylibs} ${alib})
+	list(APPEND mylibs ${alib})
 endforeach(lib)
 
 # message(${mylibs})
@@ -85,7 +85,6 @@ include_directories("/opt/local/include"
 	"$ENV{ACE_ROOT}"
 	"$ENV{TAO_ROOT}"
 	"$ENV{TAO_ROOT}/orbsvcs"
-	${incs}
 	"$ENV{COLIBRY}/include")
 
 add_compile_options(
@@ -98,14 +97,20 @@ add_compile_options(
 
 # Libraries
 
-add_library(colibry SHARED ${sources})
-add_library(colibry_static STATIC ${sources})
+function(mktarget pname ptype)
+	add_library(${pname} ${ptype})
+	add_library(${pname}::${pname} ALIAS ${pname})
+	target_sources(${pname} PRIVATE ${sources})
+	target_include_directories(${pname}
+		PRIVATE ${incs}
+		PUBLIC include)
+	target_link_libraries(${pname} ${mylibs} Catch2::Catch2WithMain)
+	install(TARGETS ${pname} LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/lib)
+endfunction()
 
-target_link_libraries(colibry ${mylibs} Catch2::Catch2WithMain)
-target_link_libraries(colibry_static ${mylibs} Catch2::Catch2WithMain)
+mktarget(${PROJECT_NAME} SHARED)
+mktarget(${PROJECT_NAME}_static STATIC)
 
 # Installs
 
-install(TARGETS colibry LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/lib)
-install(TARGETS colibry_static ARCHIVE DESTINATION ${PROJECT_SOURCE_DIR}/lib)
 install(FILES ${headers} DESTINATION "${PROJECT_SOURCE_DIR}/include/colibry")

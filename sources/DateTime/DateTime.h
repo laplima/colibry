@@ -87,8 +87,6 @@ namespace colibry {
 		// DAY DD/MM/YYYY HH:MM:SS
 		friend std::ostream& operator<<(std::ostream& os, const DateTime& dt);
 
-	public:
-
 		static DateTime Now();
 		static DateTime Parse(const std::string& s, const char* format=nullptr);
 		static DateTime ParseDMY(const std::string& sdt);  // DD/MM/YYYY

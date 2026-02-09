@@ -39,8 +39,8 @@ namespace colibry {
 		virtual bool operator==(const SocketBase& sock);
 		virtual void Close();
 
-		Property<SocketBase,int,'r'> FD;
-		Property<SocketBase,SocketType,'r'> Type;
+		Property<SocketBase,int,PropType::rd> FD;
+		Property<SocketBase,SocketType,PropType::rd> Type;
 
 	protected:
 
@@ -77,23 +77,23 @@ namespace colibry {
 			ConnectionFailure(const std::string& details) : std::runtime_error(details) {}
 		};
 
-	public:
+		// Methods
 
-		explicit Socket();              // create new socket
-		explicit Socket(const int fd);  // instantiates socket with provided fd
-		virtual ~Socket();				// close socket + free memory
+		explicit Socket();          // create new socket
+		explicit Socket(int fd);  	// instantiates socket with provided fd
+		~Socket() override;			// close socket + free memory
 
 		// Connect to listening (server) socket
 		virtual void Connect(const char* host, Port_t port);
 
 		// Raw data exchange
-		virtual ssize_t Read(void* buf, const size_t len);
-		virtual ssize_t Write(const void* buf, const size_t len);
+		virtual ssize_t Read(void* buf, size_t len);
+		virtual ssize_t Write(const void* buf, size_t len);
 
 		// Raw data exchange (same as Read and Write - prefer this)
 		// may throw ConnectionFailure exceptions
-		virtual ssize_t Receive(char* buf, const size_t len);
-		virtual ssize_t Send(const char* buf, const size_t len);
+		virtual ssize_t Receive(char* buf, size_t len);
+		virtual ssize_t Send(const char* buf, size_t len);
 
 		// may throw ConnectionFailure and Disconnected exceptions
 		virtual Socket& operator<<(const std::string& s);
@@ -102,20 +102,20 @@ namespace colibry {
 		template <class ANY> void Send(const ANY& x);
 		template <class ANY> void Receive(ANY& x);
 		// Integers
-		virtual Socket& operator<<(const int x);
+		virtual Socket& operator<<(int x);
 		virtual Socket& operator>>(int& x);
 		// Floats
-		virtual Socket& operator<<(const float x);
+		virtual Socket& operator<<(float x);
 		virtual Socket& operator>>(float& x);
 
-		virtual void Close();
+		void Close() override;
 
 		// Check whether socket is connected
-		bool IsConnected() const { return m_is_connected; }
+		[[nodiscard]] bool IsConnected() const { return m_is_connected; }
 
 		// Properties
-		Property<Socket,const char*,'r'> RemoteHost;
-		Property<Socket,Port_t,'r'> RemotePort;
+		Property<Socket,const char*,PropType::rd> RemoteHost;
+		Property<Socket,Port_t,PropType::rd> RemotePort;
 
 		friend class ServerSocket;
 
@@ -127,10 +127,8 @@ namespace colibry {
 		Socket& operator=(const Socket& sock);
 
 		// Get Remote Host/Port name if connected
-		const char* getRemoteHost() const;
-		Port_t getRemotePort() const;
-
-	protected:
+		[[nodiscard]] const char* getRemoteHost() const;
+		[[nodiscard]] Port_t getRemotePort() const;
 
 		bool m_is_connected;
 		std::string m_remote_host;
@@ -160,11 +158,11 @@ namespace colibry {
 		// Wait for connection returning pointer to connected client socket
 		virtual Socket* Accept();  // user is responsible for releasing memory
 
-		Property<ServerSocket,Port_t,'r'> Port;
+		Property<ServerSocket,Port_t,PropType::rd> Port;
 
 	protected:
 
-		Port_t getPort() const { return m_portn; }
+		[[nodiscard]] Port_t getPort() const { return m_portn; }
 
 		void init(Port_t portn, const std::string& ip = "");	// default for ip = localhost
 		Port_t m_portn;
@@ -195,8 +193,6 @@ namespace colibry {
 
 		void UpdateMaxFD();
 
-	protected:
-
 		fd_set m_master;
 		fd_set m_readfs;
 		unsigned short m_maxfd;
@@ -223,13 +219,13 @@ namespace colibry {
 
 		virtual ssize_t Receive(char* buf, const size_t len);
 
-		int getFD() const { return m_usockfd; }
-		Port_t getOriginPort() const { return m_origin_port; }
-		std::string getOriginIP() const { return m_origin_ip; }
+		[[nodiscard]] int getFD() const { return m_usockfd; }
+		[[nodiscard]] Port_t getOriginPort() const { return m_origin_port; }
+		[[nodiscard]] std::string getOriginIP() const { return m_origin_ip; }
 
 	protected:
 		void init(Port_t port, const std::string& ip="");
-	protected:
+
 		int m_usockfd;
 		Port_t m_port;
 		Port_t m_origin_port;
