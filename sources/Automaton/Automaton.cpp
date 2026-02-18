@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <stdexcept>
 // #include <sstream>
-#include <colibry/throw_if.h>
+#include <throw_if.h>
 #include "Automaton.h"
 
 using namespace std;

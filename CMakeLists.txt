@@ -47,11 +47,12 @@ foreach(comp ${components})
 	file(GLOB sfiles "sources/${comp}/*.cpp")
 	list(APPEND headers ${hfiles})
 	list(APPEND sources ${sfiles})
-	list(APPEND incs "sources/${comp}")
+	list(APPEND incs "${PROJECT_SOURCE_DIR}/sources/${comp}")
 endforeach(comp)
 
-#message("headers = ${headers}")
-#message("sources = ${sources}")
+# message("headers = ${headers}")
+# message("sources = ${sources}")
+# message("incs = ${incs}")
 
 # Libs (for dynamic libraries)
 
@@ -97,20 +98,22 @@ add_compile_options(
 
 # Libraries
 
-function(mktarget pname ptype)
-	add_library(${pname} ${ptype})
-	add_library(${pname}::${pname} ALIAS ${pname})
-	target_sources(${pname} PRIVATE ${sources})
-	target_include_directories(${pname}
-		PRIVATE ${incs}
-		PUBLIC include)
-	target_link_libraries(${pname} ${mylibs} Catch2::Catch2WithMain)
-	install(TARGETS ${pname} LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/lib)
-endfunction()
+set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}")
+# set(CMAKE_INSTALL_PREFIX "/tmp/co")
 
-mktarget(${PROJECT_NAME} SHARED)
-mktarget(${PROJECT_NAME}_static STATIC)
+add_library(colibry SHARED)
+add_library(colibry::colibry ALIAS colibry)
+target_sources(colibry PRIVATE ${sources})
+target_include_directories(colibry PRIVATE ${incs} PUBLIC include)
+target_link_libraries(colibry ${mylibs} Catch2::Catch2WithMain)
+install(TARGETS colibry LIBRARY)
 
-# Installs
+add_library(colibry_static STATIC)
+add_library(colibry::colibry_static ALIAS colibry_static)
+target_sources(colibry_static PRIVATE ${sources})
+target_include_directories(colibry_static PRIVATE ${incs} PUBLIC include)
+target_link_libraries(colibry_static ${mylibs} Catch2::Catch2WithMain)
+install(TARGETS colibry_static ARCHIVE)
 
-install(FILES ${headers} DESTINATION "${PROJECT_SOURCE_DIR}/include/colibry")
+# install header files
+install(FILES ${headers} DESTINATION "${CMAKE_INSTALL_PREFIX}/include/colibry")
