@@ -17,6 +17,7 @@ namespace colibry {
 	public:
 		// Data types
 		enum class Color : char { RED, BLACK };
+
 		class Node {
 		private:
 			RBTree* tree;	// owner tree (to access nil())
@@ -26,22 +27,25 @@ namespace colibry {
 			Node* right;
 			Node* parent;
 			Color color;
-		public:
+
 			Node(RBTree* t) : tree{t} { left = right = parent = tree->nil(); }
-			bool IsRoot() const { return parent == tree->nil(); }
-			bool IsLeft() const { return (IsRoot() ? false : (this == parent->left)); }
-			bool IsRight() const { return (IsRoot() ? false : (this == parent->right)); }
+			[[nodiscard]] bool IsRoot() const { return parent == tree->nil(); }
+			[[nodiscard]] bool IsLeft() const { return (IsRoot() ? false : (this == parent->left)); }
+			[[nodiscard]] bool IsRight() const { return (IsRoot() ? false : (this == parent->right)); }
 			RBTree* Tree() { return tree; }
 		};
+
 	protected:
 		Node* m_sentinel;	// color is BLACK (other fields are immaterial)
 		Node* m_root;
-	protected:
+
 		void RotateLeft(Node* n);
 		void RotateRight(Node* n);
 		void FixInsert(Node* nn);
 		void Erase(Node* r);
+
 	public:
+
 		RBTree();
 		virtual ~RBTree();
 
@@ -66,23 +70,21 @@ namespace colibry {
 		// }
 		template<typename F>
 		void Traverse(F visit) { Traverse(m_root,visit); }
-		virtual bool Empty() const { return m_root == nil(); }
+		[[nodiscard]] virtual bool Empty() const { return m_root == nil(); }
 		virtual void Clear() { Erase(m_root); m_root = nil(); }
-	public:
-		inline Node* nil() const { return m_sentinel; }
+
+		Node* nil() const { return m_sentinel; }
 	};
 
 	// ------------------------------------------------------------
 
 	template<typename T>
-	RBTree<T>::RBTree()
+	RBTree<T>::RBTree() : m_sentinel{new Node{this}}, m_root(nil())
 	{
-		m_sentinel = new Node{this};
 		m_sentinel->color = Color::BLACK;
 		m_sentinel->parent = m_sentinel->left
 			= m_sentinel->right
 			= m_sentinel;	// could be anything
-		m_root = nil();
 	}
 
 	template<typename T>
@@ -204,7 +206,7 @@ namespace colibry {
 		while (nd != nil()) {
 			if (nd->key == k)
 				break;
-			else if (nd->key < k)
+			if (nd->key < k)
 				nd = nd->right;
 			else
 				nd = nd->left;
@@ -269,8 +271,7 @@ namespace colibry {
 	{
 		if (n->IsRoot())
 			return 0;
-		else
-			return 1 + Level(n->parent);
+		return 1 + Level(n->parent);
 	}
 
 	template<typename T>
@@ -283,7 +284,6 @@ namespace colibry {
 			Traverse(r->right,visit);
 		}
 	}
-
 
 	template<typename T>
 	void RBTree<T>::Remove()

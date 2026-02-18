@@ -1,4 +1,4 @@
-#include <iostream>
+#include <print>
 #include <vector>
 #include "../RBTree.h"
 
@@ -7,39 +7,40 @@ using namespace colibry;
 
 void f(int x)
 {
-	cout << x << " ";
+	println("\t{} ", x);
 }
 
 int main(int argc, char* argv[])
 {
-	cout << "Red-Black Binary Search Trees\n" << endl;
+	println("Red-Black Binary Search Trees");
 
 	vector<int> v{20,10,30,5,40,35,32,34,33};
 	RBTree<int> rbt;
 
-	cout << "Inserting:\n\t";
+	print("Inserting:\n\t");
 	for (int i : v) {
-		cout << i << " ";
+        print("{} ", i);
 		rbt.Insert(i);
 	}
-	cout << endl;
+    println();
 
-	cout << "Traversing (in-order):\n\t";
+	print("Traversing (in-order):\n");
 	rbt.Traverse(f);
-	cout << endl << endl;
+    println("\n");
 
-	cout << "Min = " << rbt.Minimum()->key << endl;
-	cout << "Max = " << rbt.Maximum()->key << endl << endl;
+	println("Min = {}", rbt.Minimum()->key);
+	println("Max = {}\n", rbt.Maximum()->key);
 
 	auto nd = rbt.Search(32);
 	if (nd != rbt.nil()) {
 		auto sc = rbt.Successor(nd);
-		cout << "Successor (32) = " << sc->key << endl;
+		println("Successor (32) = {}", sc->key);
 		sc = rbt.Predecessor(nd);
-		cout << "Predecessor (32) = " << sc->key << endl;
+		println("Predecessor (32) = {}", sc->key);
 	}
 
-	cout << "Levels:\n";
+	println("Levels:");
 	for (int i : v)
-		cout << "\t" << i << "\t" << rbt.Level(rbt.Search(i)) << endl;
+		println("\t{}\t{}", i, rbt.Level(rbt.Search(i)));
 }
+
