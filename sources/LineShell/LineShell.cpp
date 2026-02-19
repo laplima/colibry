@@ -74,6 +74,8 @@ LineShell::LineShell(CmdObserver& obs) : cobs{obs}
 		LineShell::completion(eb, c, this->commands);
 	};
 
+    obs.parentls_ = this;
+
 	using namespace linenoise;
 
 	SetCompletionCallback(cc);

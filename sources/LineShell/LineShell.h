@@ -53,6 +53,8 @@ namespace colibry {
 
 	// Observer handles the commands -------------------------------------------
 
+    class LineShell;
+
 	class CmdObserver {
 	public:
 		CmdObserver();
@@ -66,6 +68,8 @@ namespace colibry {
 
 		friend class lineshell::EasyInit;
 		friend class LineShell;
+
+        auto* parentls() { return parentls_; }  // return pointer to the parent lineshell
 
 	protected:
 
@@ -83,6 +87,7 @@ namespace colibry {
 		};
 		std::map<std::string, CmdData> fmap;
 		bool running_ = true;
+        LineShell *parentls_ = nullptr;
 	};
 
 	// LineShell ---------------------------------------------------------------
