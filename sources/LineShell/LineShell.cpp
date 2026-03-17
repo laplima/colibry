@@ -68,7 +68,8 @@ void CmdObserver::exit_(const lineshell::Stringv& /*unused*/)
 
 // ----------------------------------------------------------------------------
 
-LineShell::LineShell(CmdObserver& obs) : cobs{obs}
+LineShell::LineShell(CmdObserver& obs, std::string history_file)
+	: cobs{obs}, history_file_{std::move(history_file)}
 {
 	auto cc = [this](const char* eb, std::vector<string>& c) {
 		LineShell::completion(eb, c, this->commands);
@@ -81,7 +82,7 @@ LineShell::LineShell(CmdObserver& obs) : cobs{obs}
 	SetCompletionCallback(cc);
 	SetMultiLine(false);
 	SetHistoryMaxLen(4);
-	LoadHistory("history.txt");
+	LoadHistory(history_file_.c_str());
 }
 
 void LineShell::completion(std::string_view buffer,
@@ -145,14 +146,15 @@ void LineShell::cmdloop()
 			continue;
 		try {
 			cobs.dispatch(cmdline);
-			linenoise::AddHistory(cmd.c_str());
+			if (cmd != "exit")		// do not insert exit to the history
+				linenoise::AddHistory(cmd.c_str());
 		} catch(const std::runtime_error& e) {
 			std::print(stderr, "{}\n", e.what());
 		} catch (const std::bad_function_call&) {
 			std::print(stderr, "no function bound to command \"{}\"\n", cmdline[0]);
 		}
 	}
-	linenoise::SaveHistory("history.txt");
+	linenoise::SaveHistory(history_file_.c_str());
 }
 
 // ----------------------------------------------------------------------------

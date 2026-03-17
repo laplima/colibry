@@ -4,44 +4,45 @@ Created by Luiz Lima Jr.
 
 ## Compiling & Installing
 
-Compile with:
+Compile and install with:
 
-	$ cd colibry
-	$ mkdir build && cd build
-	$ cmake ..
-	$ make
-	$ make install
+```bash
+cd colibry
+cmake -S . -B build
+cmake --build build
+cmake --install build
+```
 
-`make install` will install by default in the directory `${PROJECT_SOURCE_DIR}/lib` and 1 `${PROJECT_SOURCE_DIR}/include` directories (thus, there is no need to run the command as root).
+Files will be installed by default in directories `${PROJECT_SOURCE_DIR}/lib` and `${PROJECT_SOURCE_DIR}/include` (thus, there is no need to run the command as root).
 
 ## Libraries
 
-* `SimTable` &ndash; a basic dictionary string <-> integer (use `Dictionary` instead);
-* `Dictionary` &ndash; a basic dictionary;
-* `Automaton` &ndash; states and transitions defining the behavior of a machine;
-* `AutTable` &ndash; automaton table-based implementation;
-* `Bag` &ndash; a bag of data;
-* `ConsoleApp` &ndash; simple wrapper for console applications;
-* `DateTime` &ndash; simple date-time library;
-* `Exception` &ndash; basic exceptions;
-* `InteractiveShell` &ndash; a command interpreter with completion (use `LineShell` instead);
-* `IShell` &ndash; a command interpreter with completion (use `LineShell` instead);
-* `OIShell` &ndash; a command interpreter using the observer pattern (use `LineShell` instead);
-* `LineShell` &ndash; a json-based command interpreter with completion;
-* `Logger` &ndash; a logger implementation with IO streams;
-* `OptionManager` &ndash; handles command-line options;
-* `orbutils &ndash; several utilities for ACE/TAO CORBA (`ORBManager` and `NameServer`);
-* `Property` &ndash; simple object properties;
-* `SimpleProperty` &ndash; even simpler object properties;
+* `SimTable` &ndash; A basic dictionary string <-> integer (use `Dictionary` instead).
+* `Dictionary` &ndash; Implementation of a basic dictionary.
+* `Automaton` &ndash; States and transitions defining the behavior of a machine.
+* `AutTable` &ndash; Automaton table-based implementation.
+* `Bag` &ndash; A bag of data whose items can be collected and put back.
+* `ConsoleApp` &ndash; A simple wrapper for console applications.
+* `DateTime` &ndash; A simple date-time library (use `std::chrono` for advanced features).
+* `Exception` &ndash; Some basic exceptions (rather use `std::stdexcept`).
+* `InteractiveShell` &ndash; A command interpreter with completion powers (use `LineShell` instead).
+* `IShell` &ndash; A command interpreter with completion (use `LineShell` instead).
+* `OIShell` &ndash; A command interpreter using the observer pattern (use `LineShell` instead).
+* `LineShell` &ndash; A JSON-based command interpreter with completion for console applications using the observer design pattern.
+* `Logger` &ndash; A logger implementation with IO streams.
+* `OptionManager` &ndash; A simple handler for command-line options.
+* `orbutils` &ndash; A collection of utilities for ACE/TAO CORBA (`ORBManager` and `NameServer`).
+* `Property` &ndash; Assign properties to objects.
+* `SimpleProperty` &ndash; An even simpler object property implementation.
 * `RedBlackTree` &ndash;
-* `SafeQueue` &ndash; thread-safe queue using POSIX
+* `SafeQueue` &ndash; Thread-safe queue using POSIX.
 * `CSemaphore` &ndash;
 * `Sockets` &ndash; 
-* `TextTools` &ndash;
-* `Throw_if` &ndash; 
+* `TextTools` &ndash; A collection of text and terminal tools.
+* `Throw_if` &ndash; An assert-like library that throws custom exceptions upon errors.
 * `XML` &ndash;
 
-For usage details and documentation, see sources (header files).
+For usage information and documentation details, see the sources (header/README files).
 
 ### External library dependencies:
 

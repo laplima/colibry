@@ -107,3 +107,8 @@ Sample:
 ]
 
 ```
+
+### History file
+
+Default history file: "history.txt".
+This name can be overriden by the 2nd parameter in the LineShell constructor.

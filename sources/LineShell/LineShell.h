@@ -96,7 +96,7 @@ namespace colibry {
 	class LineShell {
 	public:
 
-		explicit LineShell(CmdObserver& obs);
+		LineShell(CmdObserver& obs, std::string history_file="history.txt");
 		void set_prompt(std::string p);
 		void cmdloop();
 		// manually add commands formed by ntokens+1 tokens
@@ -114,6 +114,7 @@ namespace colibry {
 		std::string prompt;
 		CmdObserver& cobs;		// doesn't own observer
 		std::vector<lineshell::Stringv> commands;
+		std::string history_file_;
 	};
 
 	namespace lineshell {
