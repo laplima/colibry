@@ -8,7 +8,7 @@
 #include <string>
 #include <initializer_list>
 #include <vector>
-#include <format>
+#include <print>
 #include "TextStyle.h"
 
 namespace colibry {
@@ -54,5 +54,13 @@ struct std::formatter<colibry::EscapedText> : std::formatter<std::string> {
 		return format_to(ctx.out(), "{}", static_cast<std::string>(t));
 	}
 };
+
+template <typename... Args>
+void println(const colibry::TextStyle& ts, std::format_string<Args...> fmt, Args&&... args)
+{
+	std::print("{}", static_cast<std::string>(colibry::NumSeq{ts}));
+	std::print(fmt, std::forward<Args>(args)...);
+	std::println("\033[0m");
+}
 
 #endif //ESCAPE_DECO_ESCAPEDTEXT_H

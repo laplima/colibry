@@ -1,13 +1,21 @@
-#include <iostream>
-#include "../TextTools.h"
+#include <EscapedText.h>
+#include <TextStyle.h>
+#include <print>
+#include <colibry/TextTools.h>
+#include <catch2/catch_test_macros.hpp>
 
 using namespace std;
 using namespace colibry;
 
 int main(int argc, char* argv[])
 {
-    cout << colibry::set_color(255,255,255) << "white!" << colibry::reset_color() << endl;
-    cout << set_color("#FF8000",true) << "some color" << reset_color() << endl;
-    cout << "normal" << endl;
+    println("{}white!{}", colibry::set_color(255,255,255), reset_color());
+    println("{}some color{}", set_color("#FF8000",true), reset_color());
+    println("normal");
+
+    println("{}", EscapedText{fg(color::brown) | emphasis::bold,
+        "this is escaped"});
+
+    println(bg(color::dark_cyan), "{} ({})", "oing boing"s, 123);
 }
 

@@ -1,5 +1,5 @@
 #include <string>
-#include "../Dictionary.h"
+#include <colibry/Dictionary.h>
 #include <catch2/catch_test_macros.hpp>
 
 using namespace std;

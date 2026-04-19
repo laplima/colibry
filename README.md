@@ -8,12 +8,12 @@ Compile and install with:
 
 ```bash
 cd colibry
-cmake -S . -B build
+cmake -S . -B build --fresh -DBUILD_SHARED_LIBS=ON
 cmake --build build
-cmake --install build
+cmake --install build --prefix .
 ```
 
-Files will be installed by default in directories `${PROJECT_SOURCE_DIR}/lib` and `${PROJECT_SOURCE_DIR}/include` (thus, there is no need to run the command as root).
+Files will be installed by default in directories `${CMAKE_INSTALL_PREFIX}/lib` and `${CMAKE_INSTALL_PREFIX}/include`. Current directory (`.`) may be replaced with any other `<install_dir>`.
 
 ## Libraries
 
@@ -43,6 +43,29 @@ Files will be installed by default in directories `${PROJECT_SOURCE_DIR}/lib` an
 * `XML` &ndash;
 
 For usage information and documentation details, see the sources (header/README files).
+
+## Usage
+
+```cmake
+cmake_minimum_required(VERSION 3.30 FATAL_ERROR)
+
+project(test)
+
+set(sources main.cpp)
+
+set(CMAKE_CXX_STANDARD 26)
+set(CMAKE_BUILD_TYPE Debug)
+
+find_package(colibry REQUIRED)
+
+# add_compile_options(-Wall -Wshadow -Wextra -Wconversion)
+add_executable(${PROJECT_NAME} ${sources})
+target_link_libraries(${PROJECT_NAME} colibry::colibry)
+```
+When compiling, provide the path of CMake’s configuration file:
+```bash
+cmake -S . -B build --fresh -DCMAKE_PREFIX_PATH=<install_dir>/lib/cmake
+```
 
 ### External library dependencies:
 

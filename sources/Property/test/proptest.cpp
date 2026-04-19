@@ -1,8 +1,7 @@
 #include <print>
-#include <format>
 #include <string>
 #include <catch2/catch_test_macros.hpp>
-#include "../Property.h"
+#include <colibry/Property.h>
 
 using namespace std;
 using namespace colibry;

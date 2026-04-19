@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_BUILD_TYPE Debug)
 
 find_package(Catch2 3 REQUIRED)
+find_package(colibry REQUIRED)
 
 set(libs readline)
 set(mylibs)
@@ -19,9 +20,10 @@ foreach(lib ${libs})
 	set(mylibs ${mylibs} ${tlib})
 endforeach(lib)
 
-include_directories(".." "/opt/local/include")
+include_directories("/opt/local/include")
 
 # add_compile_options()
 
 add_executable(${PROJECT_NAME} ${sources})
-target_link_libraries(${PROJECT_NAME} ${mylibs} Catch2::Catch2WithMain)
+target_link_libraries(${PROJECT_NAME} ${mylibs}
+	Catch2::Catch2WithMain colibry::colibry)

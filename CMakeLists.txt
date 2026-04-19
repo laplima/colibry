@@ -1,15 +1,24 @@
 #
 # (C) 2018-26 by LAPLJ
 #
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.30)
 
-project(colibry)
+# include(GNUInstallDirs)
+# include(CMakePackageConfigHelpers)
+
+project(colibry
+	VERSION 2.1.0
+	DESCRIPTION "Common Object Library")
+
+set(libname ${PROJECT_NAME})
+
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
 
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_STANDARD 26)
 
-# find_package(fmt REQUIRED)
-find_package(Catch2 3 REQUIRED)    # for testing
+# find_package(Catch2 3 REQUIRED)    # for testing
 
 set(components
     SymTable
@@ -41,7 +50,6 @@ set(components
 set(headers)
 set(sources)
 set(incs)
-
 foreach(comp ${components})
 	file(GLOB hfiles "sources/${comp}/*.h")
 	file(GLOB sfiles "sources/${comp}/*.cpp")
@@ -50,14 +58,9 @@ foreach(comp ${components})
 	list(APPEND incs "${PROJECT_SOURCE_DIR}/sources/${comp}")
 endforeach(comp)
 
-# message("headers = ${headers}")
-# message("sources = ${sources}")
-# message("incs = ${incs}")
-
-# Libs (for dynamic libraries)
+# external libs
 
 set(mylibs)
-
 set(libnames
 	ACE TAO
 	TAO_PortableServer
@@ -65,6 +68,7 @@ set(libnames
 	TAO_CosNaming
 	TAO_IORTable
 	readline)
+
 
 # NO_DEFAULT_PATH prevents macos from getting readline from /usr/lib/.
 # /opt/local/lib/ is the right path
@@ -76,8 +80,6 @@ foreach(lib ${libnames})
 	find_library(alib ${lib}) # will find now if not found in the previous line
 	list(APPEND mylibs ${alib})
 endforeach(lib)
-
-# message(${mylibs})
 
 # Include directories
 
@@ -96,24 +98,54 @@ add_compile_options(
     # -Wconversion
 )
 
-# Libraries
-
-set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}")
+# set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}")
 # set(CMAKE_INSTALL_PREFIX "/tmp/co")
 
-add_library(colibry SHARED)
-add_library(colibry::colibry ALIAS colibry)
-target_sources(colibry PRIVATE ${sources})
-target_include_directories(colibry PRIVATE ${incs} PUBLIC include)
-target_link_libraries(colibry ${mylibs} Catch2::Catch2WithMain)
-install(TARGETS colibry LIBRARY)
+# Libraries
 
-add_library(colibry_static STATIC)
-add_library(colibry::colibry_static ALIAS colibry_static)
-target_sources(colibry_static PRIVATE ${sources})
-target_include_directories(colibry_static PRIVATE ${incs} PUBLIC include)
-target_link_libraries(colibry_static ${mylibs} Catch2::Catch2WithMain)
-install(TARGETS colibry_static ARCHIVE)
+# Library (both static and dynamic)
+# STATIC / SHARED not specified (depends on BUILD_SHARED_LIBS=OFF/ON -- default = OFF)
 
-# install header files
-install(FILES ${headers} DESTINATION "${CMAKE_INSTALL_PREFIX}/include/colibry")
+add_library(${libname})
+add_library(${libname}::${libname} ALIAS ${libname})
+target_sources(${libname} PRIVATE ${sources})
+target_include_directories(${libname}
+	PRIVATE ${incs}
+	PUBLIC
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/sources/${libname}>
+	$<INSTALL_INTERFACE:include/${libname}>)
+set_target_properties(${libname} PROPERTIES PUBLIC_HEADER "${headers}")
+target_link_libraries(${libname} ${mylibs})
+	# Catch2::Catch2WithMain)
+
+install(TARGETS ${libname}
+		EXPORT ${libname}-targets
+		LIBRARY
+		LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+		ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+		RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+		PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${libname}
+		INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+install(EXPORT ${libname}-targets
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${libname}
+	NAMESPACE ${libname}::
+	FILE ${libname}-targets.cmake) # must have .cmake extension
+
+# Generate and install the config file
+configure_package_config_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/${libname}-config.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/${libname}-config.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${libname})
+
+# (Optionally generate a version file)
+write_basic_package_version_file(
+    ${libname}-config-version.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY AnyNewerVersion)
+
+# install files
+install(FILES
+	${CMAKE_CURRENT_BINARY_DIR}/${libname}-config.cmake
+	${CMAKE_CURRENT_BINARY_DIR}/${libname}-config-version.cmake
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${libname})
