@@ -1,0 +1,52 @@
+{
+	"version": 9,
+	"configurePresets": [
+		{
+			"name": "default",
+			"hidden": true,
+			"generator": "Ninja",
+			"binaryDir": "build",
+			"installDir": "${sourceDir}",
+			"cacheVariables": {
+				"CMAKE_CXX_STANDARD": "26"
+			}
+		},
+		{
+			"name": "dynamic",
+			"inherits": "default",
+			"displayName": "Ninja (dynamic lib)",
+			"description": "Build the dynamic library with Ninja",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release",
+				"BUILD_SHARED_LIBS": "ON"
+			}
+		},
+		{
+			"name": "static",
+			"inherits": "default",
+			"displayName": "Ninja (static lib)",
+			"description": "Build the static library with Ninja",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release",
+				"BUILD_SHARED_LIBS": "OFF"
+			}
+		},
+		{
+			"name": "debug",
+			"inherits": "default",
+			"displayName": "Ninja (dynamic lib) debug",
+			"description": "Build the library for debugging with Ninja",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug",
+				"BUILD_SHARED_LIBS": "ON"
+			}
+		}
+	],
+	"buildPresets": [
+		{
+			"name": "default",
+			"displayName": "Default build",
+			"configurePreset": "dynamic"
+		}
+	]
+}

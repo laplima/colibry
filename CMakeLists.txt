@@ -1,7 +1,9 @@
 #
 # (C) 2018-26 by LAPLJ
 #
-cmake_minimum_required(VERSION 3.30)
+
+# presets
+cmake_minimum_required(VERSION 3.31)
 
 # include(GNUInstallDirs)
 # include(CMakePackageConfigHelpers)
@@ -15,10 +17,9 @@ set(libname ${PROJECT_NAME})
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
-set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_CXX_STANDARD 26)
-
-# find_package(Catch2 3 REQUIRED)    # for testing
+# presets
+# set(CMAKE_BUILD_TYPE Release)
+# set(CMAKE_CXX_STANDARD 26)
 
 set(components
     SymTable
