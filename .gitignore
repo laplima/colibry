@@ -2,6 +2,7 @@
 build
 include
 lib
+lib64
 *.o
 a.out
 *.a

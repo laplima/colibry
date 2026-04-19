@@ -5,7 +5,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
-#include <colibry/EscapedText.h>
+#include "EscapedText.h"
 
 namespace colibry {
 

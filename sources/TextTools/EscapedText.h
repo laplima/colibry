@@ -58,7 +58,7 @@ struct std::formatter<colibry::EscapedText> : std::formatter<std::string> {
 template <typename... Args>
 void println(const colibry::TextStyle& ts, std::format_string<Args...> fmt, Args&&... args)
 {
-	std::print("{}", static_cast<std::string>(colibry::NumSeq{ts}));
+	std::print("\033[{}m", static_cast<std::string>(colibry::NumSeq{ts}));
 	std::print(fmt, std::forward<Args>(args)...);
 	std::println("\033[0m");
 }
