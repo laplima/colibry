@@ -54,6 +54,11 @@ namespace colibry {
 
 	    return os.str();
 	}
+
+	// unicode manip
+	void remove_accents(std::string& s);	// remove accents from s
+	std::string::size_type unicode_size(const std::string_view& s);
+
 }; // namespace
 
 #endif

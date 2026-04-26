@@ -1,4 +1,12 @@
 //
+// EscapedText
+//
+// Generates text surrounded by a custom graphics escape sequence:
+//
+//    "\033[" + NumSeq + "m" + text + "\033[0m"
+//
+// NumSeq can be used directly or generated from TextStyle.
+//
 // Created by Luiz Lima Jr. on 14/04/26.
 //
 
@@ -40,9 +48,22 @@ namespace colibry {
 			: txt_{std::forward<Args>(args)...}, eseq_{static_cast<std::string>(ns)} {}
 
 		operator std::string() const;
+
+		// enable TextStyle (w/o turning back to default)
+		static constexpr std::string enable_style(
+			const TextStyle& ts) {
+			return eseq(static_cast<std::string>(NumSeq{ts}));
+		}
+
+		static constexpr std::string disable_style() { return eseq("0"); }
+
 	private:
 		std::string txt_;
 		std::string eseq_;
+
+		// raw eseq generator
+		static constexpr std::string eseq(const std::string_view& code) {
+			return std::format("\033[{}m", code); }
 	};
 
 } // end namespace
@@ -58,9 +79,9 @@ struct std::formatter<colibry::EscapedText> : std::formatter<std::string> {
 template <typename... Args>
 void println(const colibry::TextStyle& ts, std::format_string<Args...> fmt, Args&&... args)
 {
-	std::print("\033[{}m", static_cast<std::string>(colibry::NumSeq{ts}));
+	std::print("{}", colibry::EscapedText::enable_style(ts));
 	std::print(fmt, std::forward<Args>(args)...);
-	std::println("\033[0m");
+	std::println("{}", colibry::EscapedText::disable_style());
 }
 
 #endif //ESCAPE_DECO_ESCAPEDTEXT_H

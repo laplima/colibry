@@ -129,3 +129,27 @@ std::vector<std::string> colibry::split(const std::string& input, const std::str
 		last;
 	return {first, last};
 }
+
+void colibry::remove_accents(std::string& s)
+{
+	// only works for lower-case
+	static const std::string acc = "áàâãäåéèêëíìîïóòôõöøúùûüçñýÿæœß";
+	static const std::string cov = "aaaaaaeeeeiiiioooooouuuucnyyaos";
+
+	auto p = s.find_first_of(acc);
+	while (p!= std::string::npos) {
+		auto pa = acc.find(s.substr(p,2));
+		s.replace(p,2,std::string{cov[pa/2]});
+		p = s.find_first_of(acc);
+	}
+}
+
+std::string::size_type colibry::unicode_size(const std::string_view& s)
+{
+    std::string::size_type count = 0;
+    for (unsigned char byte : s)
+        if ((byte & 0xC0) != 0x80) // continuation byte?
+            ++count;
+    return count;
+}
+

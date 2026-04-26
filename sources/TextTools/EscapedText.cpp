@@ -5,12 +5,6 @@
 #include "EscapedText.h"
 #include <string_view>
 
-// helpers
-constexpr std::string mk_eseq(const std::string_view& code)
-{
-	return std::format("\033[{}m", code);
-}
-
 using namespace colibry;
 
 // NumSeq
@@ -35,7 +29,7 @@ NumSeq::operator std::string() const
 
 EscapedText::operator std::string() const
 {
-	return mk_eseq(eseq_) + txt_ + mk_eseq("0");
+	return eseq(eseq_) + txt_ + eseq("0");
 }
 
 NumSeq::NumSeq(const TextStyle& style)
