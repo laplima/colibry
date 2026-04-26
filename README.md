@@ -10,7 +10,7 @@ Compile and install with:
 cd colibry
 cmake --preset=dynamic   # cmake -S . -B build --fresh -DBUILD_SHARED_LIBS=ON
 cmake --build build
-cmake --install build       # uses --prefix .
+cmake --install build    # uses --prefix .
 ```
 
 The library will be installed in the directories `${COLIBRY}/lib` and `${COLIBRY}/include` (the current directory `.` corresponds to `${CMAKE_INSTALL_PREFIX}`. To install in another directory, specify CMake's `--prefix` option: `cmake --install build --prefix <install_dir>`.

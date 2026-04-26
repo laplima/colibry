@@ -70,7 +70,6 @@ set(libnames
 	TAO_IORTable
 	readline)
 
-
 # NO_DEFAULT_PATH prevents macos from getting readline from /usr/lib/.
 # /opt/local/lib/ is the right path
 # NO_DEFAULT_PATH can be used to explicitly set library path search order.
@@ -89,7 +88,8 @@ include_directories("/opt/local/include"
 	"$ENV{ACE_ROOT}"
 	"$ENV{TAO_ROOT}"
 	"$ENV{TAO_ROOT}/orbsvcs"
-	"$ENV{COLIBRY}/include")
+	# "$ENV{COLIBRY}/include"
+)
 
 add_compile_options(
     -Wno-deprecated-declarations -Wno-deprecated-builtins
