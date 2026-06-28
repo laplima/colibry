@@ -81,8 +81,6 @@ std::string colibry::restore_cursor()
 	return ss.str();
 }
 
-
-
 std::string colibry::set_color(unsigned char tc, bool bold)
 {
 	tc = 30 + tc%8;	// make sure it belongs to a valid terminal color interval

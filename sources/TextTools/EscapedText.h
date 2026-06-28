@@ -77,11 +77,22 @@ struct std::formatter<colibry::EscapedText> : std::formatter<std::string> {
 };
 
 template <typename... Args>
-void println(const colibry::TextStyle& ts, std::format_string<Args...> fmt, Args&&... args)
+void print(const colibry::TextStyle& ts, std::format_string<Args...> fmt, Args&&... args)
 {
 	std::print("{}", colibry::EscapedText::enable_style(ts));
 	std::print(fmt, std::forward<Args>(args)...);
-	std::println("{}", colibry::EscapedText::disable_style());
+	std::print("{}", colibry::EscapedText::disable_style());
+}
+
+template <typename... Args>
+void println(const colibry::TextStyle& ts, std::format_string<Args...> fmt, Args&&... args)
+{
+	print(ts,fmt,std::forward<Args>(args)...);
+	std::println();
+
+	// std::print("{}", colibry::EscapedText::enable_style(ts));
+	// std::print(fmt, std::forward<Args>(args)...);
+	// std::println("{}", colibry::EscapedText::disable_style());
 }
 
 #endif //ESCAPE_DECO_ESCAPEDTEXT_H
