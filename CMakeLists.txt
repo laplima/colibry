@@ -31,6 +31,7 @@ set(components
 	DateTime
 	Exception
 	InteractiveShell
+	ipc
 	IShell
     OIShell
     LineShell

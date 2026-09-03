@@ -4,7 +4,7 @@
 // C++11 "counting" semaphore implementation using condition variables
 // (C) 2013-2020 by laplima
 //
-// It seems that C++20 has "counting_sepmaphore" class...
+// C++20 has a "counting_sepmaphore" class, making CSemaphore obsolete
 //
 
 #ifndef __SEMAPHORE_C11__
