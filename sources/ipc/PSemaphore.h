@@ -20,7 +20,7 @@ namespace colibry {
 
 	class Semaphore {
 	public:
-		Semaphore(const std::string& id, bool persist=false);
+		Semaphore(const std::string& id);	// won't create
 		Semaphore(const std::string& id, int val, bool persist=false, mode_t mode=0666);
 		Semaphore(const Semaphore&) = delete;
 		Semaphore(Semaphore&&) noexcept;
@@ -29,6 +29,8 @@ namespace colibry {
 		virtual ~Semaphore();
 		virtual void up();
 		virtual void down();
+		virtual void down(float t);	// timed down
+		virtual bool try_down();	// true if down performed, false if was zero
 		virtual void persist(bool p=true) { _persist=p; }	// doesn't remove semaphore if true
 		[[nodiscard]] virtual bool created() const { return _created; }
 		[[nodiscard]] virtual bool persistent() const { return _persist; }

@@ -2,7 +2,9 @@
 #include <fcntl.h>
 #include <iostream>
 #include <iomanip>
-#include <sstream>
+#include <semaphore.h>
+#include <format>
+// #include <sstream>
 #include <random>
 #include "../Throw_if/throw_if.h"
 #include <cerrno>
@@ -12,10 +14,12 @@ void colibry::delete_sem(const std::string& id)
 	sem_unlink(ipc::fixn(id).c_str());
 }
 
-colibry::Semaphore::Semaphore(const std::string& id, bool persist)
+// this constructor will not create a new semaphore
+// (and, therefore, should not unlink it upon destruction)
+colibry::Semaphore::Semaphore(const std::string& id)
 	: _name{ipc::fixn(id)},
 	_sem{::sem_open(_name.c_str(),O_RDWR)},
-	_created{false}, _persist{persist}
+	_created{false}, _persist{true}
 {
 	throw_if(_sem==SEM_FAILED,"sem_open(" << id << ")");
 }
@@ -41,7 +45,7 @@ colibry::Semaphore::Semaphore(const std::string& id, int val, bool persist, mode
 		_sem = ::sem_open(_name.c_str(),O_RDWR);
 		_created = false;
 	}
-	throw_if(_sem==SEM_FAILED,"sem_open(" << id << ")-create");
+	require(_sem!=SEM_FAILED, std::format("sem_open({})-create",id));
 }
 
 colibry::Semaphore::~Semaphore()
@@ -52,14 +56,31 @@ colibry::Semaphore::~Semaphore()
 
 void colibry::Semaphore::up()
 {
-	if (_sem != nullptr)
-		sem_post(_sem);
+	colibry::require(_sem != nullptr, std::format("{}.up() failed", _name));
+	::sem_post(_sem);
 }
 
 void colibry::Semaphore::down()
 {
-	if (_sem != nullptr)
-		sem_wait(_sem);
+	colibry::require(_sem != nullptr, std::format("{}.down() failed", _name));
+	::sem_wait(_sem);
+}
+
+void colibry::Semaphore::down(float t)
+{
+	// timed wait
+	colibry::require(_sem != nullptr, std::format("{}.down() failed", _name));
+	struct timespec ts;
+	ts.tv_sec = static_cast<int>(t);
+	ts.tv_nsec = static_cast<int>((t-ts.tv_sec) * 1e9);
+	::sem_timedwait(_sem, &ts);
+}
+
+bool colibry::Semaphore::try_down()
+{
+	if (_sem == nullptr)
+		return false;
+	return (::sem_trywait(_sem) == 0); // errno = EAGAIN => sem == 0
 }
 
 // helpers

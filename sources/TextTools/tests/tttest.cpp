@@ -1,3 +1,8 @@
+//
+// cmake -S . -B build --fresh -DCMAKE_PREFIX_PATH=/home/laplima/git-work/colibry/lib64/cmake
+// cmake --build build
+//
+
 #include <EscapedText.h>
 #include <TextStyle.h>
 #include <print>
@@ -16,6 +21,7 @@ int main(int argc, char* argv[])
     println("{}", EscapedText{fg(color::brown) | emphasis::bold,
         "this is escaped"});
 
-    println(bg(color::dark_cyan), "{} ({})", "oing boing"s, 123);
+    println(bg(color::dark_cyan) | fg(color::black) | emphasis::bold,
+        "{} ({})", "oing boing"s, 123);
 }
 

@@ -16,7 +16,7 @@ namespace colibry {
 	T* create_shm(const std::string& id, size_t n, bool& created, mode_t mode=0666)
 	{
 		auto oldmode = umask(~mode & 0777);
-		int fd = shm_open(fixn(id).c_str(),O_RDWR|O_CREAT|O_EXCL,mode);
+		int fd = shm_open(ipc::fixn(id).c_str(),O_RDWR|O_CREAT|O_EXCL,mode);
 		umask(oldmode);
 		if (fd == -1) {
 			if (errno == EEXIST) {

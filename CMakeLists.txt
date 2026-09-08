@@ -9,17 +9,13 @@ cmake_minimum_required(VERSION 3.31)
 # include(CMakePackageConfigHelpers)
 
 project(colibry
-	VERSION 2.1.0
+	VERSION 2.2.0
 	DESCRIPTION "Common Object Library")
 
 set(libname ${PROJECT_NAME})
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
-
-# presets
-# set(CMAKE_BUILD_TYPE Release)
-# set(CMAKE_CXX_STANDARD 26)
 
 set(components
     SymTable
